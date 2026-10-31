@@ -1,0 +1,696 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>Painel da Preparação IB</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Layout: daily command panel — sticky green top bar with view tabs; "Hoje" is a two-column day sheet (checklist left, context right); other views are full-width. */
+:root{
+  --bg:#f1f7f2; --paper:#ffffff; --paper2:#f7fbf8; --ink:#14301f; --muted:#5b7264; --line:#d6e6da;
+  --forest:#0f5132; --green:#1f8a4c; --emerald:#18a058; --mint:#dff3e6; --mint2:#eef8f1; --lime:#8fbf2f; --lime-s:#f1f7df;
+  --teal:#0f8b7d; --teal-s:#e2f4f1; --olive:#6b7f1a; --olive-s:#eef2dc; --sage:#4f6b5c; --sage-s:#e9efeb;
+  --amber:#b7791f; --amber-s:#fbf1dd; --red:#b42318; --red-s:#fdecea; --gold:#b8901f; --gold-s:#faf3d9;
+  --tec:#1f8a4c; --tec-s:#e3f4e9; --vag:#0f8b7d; --vag-s:#e2f4f1; --ia:#6b8e23; --ia-s:#eef4dd; --ent:#b7791f; --ent-s:#fbf1dd; --sis:#4f6b5c; --sis-s:#e9efeb;
+  --on:#ffffff; --h1:#cfeedb; --h2:#8fd8ac;
+  --display:"Bricolage Grotesque","Trebuchet MS",sans-serif; --body:"Figtree","Segoe UI",Arial,sans-serif; --mono:"JetBrains Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1712; --paper:#13211a; --paper2:#172a20; --ink:#e3f1e8; --muted:#9cb5a6; --line:#25392e;
+  --forest:#7fd6a4; --green:#4cc07f; --emerald:#3fd283; --mint:#183a27; --mint2:#15291e; --lime:#a9d457; --lime-s:#26301a;
+  --teal:#45c4b4; --teal-s:#123330; --olive:#a9c25a; --olive-s:#262e16; --sage:#9fb8aa; --sage-s:#1d2a23;
+  --amber:#e7ae55; --amber-s:#33270f; --red:#f2877c; --red-s:#3a1916; --gold:#e0bf5a; --gold-s:#332a10;
+  --tec:#4cc07f; --tec-s:#183a27; --vag:#45c4b4; --vag-s:#123330; --ia:#a9c25a; --ia-s:#262e16; --ent:#e7ae55; --ent-s:#33270f; --sis:#9fb8aa; --sis-s:#1d2a23; --on:#0d1712; --h1:#1f4a31; --h2:#2f7a4f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1712; --paper:#13211a; --paper2:#172a20; --ink:#e3f1e8; --muted:#9cb5a6; --line:#25392e;
+  --forest:#7fd6a4; --green:#4cc07f; --emerald:#3fd283; --mint:#183a27; --mint2:#15291e; --lime:#a9d457; --lime-s:#26301a;
+  --teal:#45c4b4; --teal-s:#123330; --olive:#a9c25a; --olive-s:#262e16; --sage:#9fb8aa; --sage-s:#1d2a23;
+  --amber:#e7ae55; --amber-s:#33270f; --red:#f2877c; --red-s:#3a1916; --gold:#e0bf5a; --gold-s:#332a10;
+  --tec:#4cc07f; --tec-s:#183a27; --vag:#45c4b4; --vag-s:#123330; --ia:#a9c25a; --ia-s:#262e16; --ent:#e7ae55; --ent-s:#33270f; --sis:#9fb8aa; --sis-s:#1d2a23; --on:#0d1712; --h1:#1f4a31; --h2:#2f7a4f; color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--forest)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--emerald);outline-offset:2px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--forest);color:var(--on)}
+.top-in{max-width:1280px;margin:0 auto;padding-block:10px 0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brand{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand h1{font-family:var(--display);font-size:20px;margin:0;letter-spacing:-.01em}
+.brand .meta{font:500 12px var(--mono);opacity:.85;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.sync{display:inline-flex;align-items:center;gap:6px}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--lime);display:inline-block}
+.sync.local i{background:var(--gold)}
+.tabs{display:flex;gap:2px;overflow-x:auto;margin-top:8px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{background:transparent;border:0;color:inherit;opacity:.78;padding:9px 13px;border-radius:8px 8px 0 0;font-weight:600;font-size:14px;white-space:nowrap}
+.tab[aria-current="page"]{background:var(--bg);color:var(--forest);opacity:1}
+main{max-width:1280px;margin:0 auto;padding-block:20px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h2{font-family:var(--display);font-size:26px;margin:0;letter-spacing:-.01em;color:var(--forest);text-wrap:balance}
+h3{font-family:var(--display);font-size:18px;margin:0 0 8px;color:var(--forest)}
+.muted{color:var(--muted)}
+.mono{font-family:var(--mono);font-size:12.5px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{background:var(--paper);border:1px solid var(--line);padding:7px 12px;border-radius:8px;font-weight:600;font-size:13.5px}
+.btn:hover{border-color:var(--green)}
+.btn.primary{background:var(--green);border-color:var(--green);color:var(--on)}
+.btn.ghost{background:transparent}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--mint);color:var(--forest)}
+.chip.prova{background:var(--red-s);color:var(--red)} .chip.mensal{background:var(--red);color:var(--on)} .chip.pratica{background:var(--teal-s);color:var(--teal)}
+.chip.cons{background:var(--olive-s);color:var(--olive)} .chip.free{background:var(--sage-s);color:var(--sage)} .chip.mile{background:var(--gold-s);color:var(--gold)}
+.bar{height:8px;background:var(--mint2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--emerald));border-radius:99px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid2{grid-template-columns:1fr}}
+/* HOJE */
+.dayhead{display:flex;justify-content:space-between;gap:14px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px}
+.dayhead .kick{font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.dnav{display:flex;gap:6px;align-items:center}
+.theme{background:linear-gradient(135deg,var(--mint) 0%,var(--paper) 70%);border:1px solid var(--line);border-left:5px solid var(--green);border-radius:12px;padding:16px 18px;margin-bottom:16px}
+.theme .t{font-family:var(--display);font-size:22px;color:var(--forest);margin:4px 0 6px;line-height:1.2}
+.theme ul{margin:6px 0 0;padding-left:18px} .theme li{margin:2px 0}
+.ring{--p:0;width:88px;height:88px;border-radius:50%;background:conic-gradient(var(--emerald) calc(var(--p)*1%),var(--mint2) 0);display:grid;place-items:center;flex:none}
+.ring b{background:var(--paper);width:68px;height:68px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-size:20px;color:var(--forest)}
+.group{border:1px solid var(--line);background:var(--paper);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.group.now{border-color:var(--emerald);box-shadow:0 0 0 3px var(--mint)}
+.gh{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 14px;background:var(--paper2);border-bottom:1px solid var(--line)}
+.gh b{font-size:14px} .gh .mono{color:var(--muted)}
+.nowtag{font-size:11px;font-weight:700;color:var(--on);background:var(--emerald);padding:1px 8px;border-radius:99px}
+.items{list-style:none;margin:0;padding:6px 8px}
+.it{display:flex;gap:10px;align-items:flex-start;padding:7px 6px;border-radius:8px}
+.it:hover{background:var(--mint2)}
+.it input[type=checkbox]{appearance:none;width:20px;height:20px;border:2px solid var(--green);border-radius:6px;flex:none;margin-top:1px;display:grid;place-items:center;background:var(--paper)}
+.it input[type=checkbox]:checked{background:var(--green)}
+.it input[type=checkbox]:checked::after{content:"";width:6px;height:11px;border:solid var(--on);border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.it label{flex:1;min-width:0;cursor:pointer}
+.it .lb{font-weight:500}
+.it .sb{display:block;font-size:13px;color:var(--muted)}
+.it.done .lb{text-decoration:line-through;text-decoration-color:var(--green);color:var(--muted)}
+.lane-dot{width:8px;height:8px;border-radius:50%;flex:none;margin-top:8px}
+.side .card{margin-bottom:14px}
+.alert{border-left:4px solid var(--amber);background:var(--amber-s);border-radius:8px;padding:9px 12px;margin-bottom:8px;font-size:14px}
+.alert.red{border-color:var(--red);background:var(--red-s)} .alert.gold{border-color:var(--gold);background:var(--gold-s)} .alert.green{border-color:var(--green);background:var(--mint)}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.field label{font-size:12.5px;font-weight:600;color:var(--muted)}
+.field input,.field textarea,.field select{background:var(--paper2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+.field textarea{min-height:90px;resize:vertical}
+.scale{display:flex;gap:6px} .scale button{flex:1;border:1px solid var(--line);background:var(--paper2);border-radius:8px;padding:6px 0;font-weight:600}
+.scale button[aria-pressed="true"]{background:var(--green);color:var(--on);border-color:var(--green)}
+.upc{list-style:none;margin:0;padding:0} .upc li{display:flex;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:14px} .upc li:last-child{border:0}
+.upc .mono{min-width:58px;color:var(--muted)}
+/* SEMANA */
+.wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
+@media (max-width:1000px){.wk{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.wk{grid-template-columns:1fr}}
+.wd{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;min-width:0;text-align:left}
+.wd.today{border-color:var(--emerald);box-shadow:0 0 0 3px var(--mint)}
+.wd.we{background:var(--paper2)}
+.wd .d{font:500 12px var(--mono);color:var(--muted)} .wd .tt{font-weight:600;font-size:14px;line-height:1.3}
+/* CALENDÁRIO */
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0}
+.toolbar select{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+.wblock{margin-bottom:18px}
+.wblock>h3{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+details.day{background:var(--paper);border:1px solid var(--line);border-radius:10px;margin-bottom:6px}
+details.day[open]{border-color:var(--green)}
+details.day>summary{list-style:none;display:grid;grid-template-columns:96px minmax(0,1fr) 120px;gap:12px;align-items:center;padding:9px 12px;cursor:pointer}
+details.day>summary::-webkit-details-marker{display:none}
+details.day.is-today>summary{background:var(--mint)}
+details.day .sum-t{font-weight:600;min-width:0;overflow-wrap:anywhere}
+details.day .body{padding:4px 12px 12px;border-top:1px solid var(--line)}
+@media (max-width:600px){details.day>summary{grid-template-columns:76px minmax(0,1fr)} details.day>summary .bar{display:none}}
+/* PROGRESSO */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:14px 0}
+.kpi{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px}
+.kpi .v{font-family:var(--display);font-size:30px;color:var(--forest);line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:13px;color:var(--muted)}
+.heatwrap{overflow-x:auto;padding-bottom:4px}
+.heat{display:grid;grid-template-rows:16px repeat(7,20px);grid-auto-flow:column;grid-auto-columns:20px;gap:4px;font-size:11px;width:max-content}
+.heat .c{width:20px;height:20px;border-radius:4px;background:var(--mint2);border:1px solid var(--line)}
+.heat .wl{white-space:nowrap;overflow:visible}
+.heat .c.l1{background:var(--h1)} .heat .c.l2{background:var(--h2)} .heat .c.l3{background:var(--emerald)} .heat .c.fut{background:transparent;border-style:dashed}
+.heat .c.today{outline:2px solid var(--forest)}
+.heat .wl{font:500 10.5px var(--mono);color:var(--muted);align-self:center}
+.mods .m{display:grid;grid-template-columns:minmax(0,1fr) 140px 46px;gap:10px;align-items:center;padding:7px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.chartwrap{overflow-x:auto}
+/* TÓPICOS */
+.tmod{margin-bottom:14px}
+.trow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 4px;border-bottom:1px dashed var(--line)}
+.lv{display:flex;gap:3px}
+.lv button{width:30px;height:28px;border:1px solid var(--line);background:var(--paper2);border-radius:6px;font:600 12px var(--mono)}
+.lv button[aria-pressed="true"]{background:var(--green);color:var(--on);border-color:var(--green)}
+/* FLUXO */
+.spine{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:10px 0}
+.sp{position:relative;background:var(--paper);border:1px solid var(--line);padding:10px 14px;margin-right:22px;flex:1 1 140px;border-radius:10px;min-width:0}
+.sp:not(:last-child)::after{content:"→";position:absolute;right:-18px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700}
+.sp b{display:block;font-size:14px} .sp span{font:500 11.5px var(--mono);color:var(--muted)}
+.sp.done{border-color:var(--green);background:var(--mint)} .sp.goal{background:var(--forest);border-color:var(--forest)} .sp.goal b,.sp.goal span{color:var(--on)}
+.lanehead,.phase{display:grid;grid-template-columns:140px repeat(5,minmax(0,1fr));gap:10px}
+.lanehead{margin-top:14px}
+.lh{border-top:4px solid var(--c);background:var(--paper);padding:8px 10px;border-radius:8px} .lh b{display:block;color:var(--c);font-size:13.5px} .lh span{font-size:11.5px;color:var(--muted)}
+.l-tec{--c:var(--tec);--s:var(--tec-s)} .l-vag{--c:var(--vag);--s:var(--vag-s)} .l-ia{--c:var(--ia);--s:var(--ia-s)} .l-ent{--c:var(--ent);--s:var(--ent-s)} .l-sis{--c:var(--sis);--s:var(--sis-s)}
+.phase{margin-top:10px}
+.pl{background:var(--forest);color:var(--on);padding:12px;border-radius:8px;display:flex;flex-direction:column;gap:3px}
+.pl .pc{font:500 12px var(--mono);opacity:.75} .pl b{font-family:var(--display);font-size:17px;line-height:1.15} .pl .pd{font:500 12px var(--mono);opacity:.9}
+.cell{background:var(--s);border-radius:8px;padding:10px;min-width:0}
+.cl{display:none;font-weight:700;color:var(--c);font-size:12.5px;margin-bottom:6px}
+.chain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px}
+.n{position:relative;background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--c);border-radius:8px;padding:7px 9px}
+.n:not(:last-child)::after{content:"";position:absolute;left:50%;bottom:-15px;width:2px;height:13px;background:var(--c);opacity:.55}
+.nh{display:flex;justify-content:space-between;gap:6px;align-items:center;flex-wrap:wrap}
+.nh .mono{font-size:11px;color:var(--muted)}
+.badge{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:4px}
+.n .tt{margin:3px 0 0;font-weight:600;font-size:13px;line-height:1.3} .n .det{margin:3px 0 0;font-size:12px;color:var(--muted)} .n .out{margin-top:5px;font-size:11.5px;color:var(--c);font-weight:600}
+.k-done{border-left-color:var(--green)} .k-done .badge{background:var(--mint);color:var(--forest)}
+.k-test .badge{background:var(--red-s);color:var(--red)}
+.k-gate{border:1.5px dashed var(--red);border-left:3px solid var(--red)} .k-gate .badge{background:var(--red);color:var(--on)}
+.k-mile{background:var(--gold-s);border-left-color:var(--gold)} .k-mile .badge{background:var(--gold);color:var(--on)}
+.k-loop{border-style:dotted;border-left-style:solid} .k-wait{opacity:.7}
+.loops{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.loop{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0}
+.loop header{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px} .loop header b{display:block} .loop header span{font-size:12px;color:var(--muted)}
+.ln{font:600 13px var(--mono);background:var(--forest);color:var(--on);width:26px;height:26px;display:grid;place-items:center;border-radius:50%;flex:none}
+.lc{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px 0;align-items:center}
+.lc li{font-size:12.5px;background:var(--mint2);border:1px solid var(--line);padding:3px 8px;border-radius:6px} .lc li:not(:last-child)::after{content:"→";margin:0 4px 0 8px;color:var(--muted)}
+.back{margin:8px 0 0;font-size:12.5px;color:var(--green);font-weight:600}
+.rules{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.rules li{background:var(--paper);border:1px solid var(--line);border-top:3px solid var(--red);padding:10px 12px;border-radius:10px} .rules b{display:block;margin-bottom:3px} .rules span{font-size:13.5px;color:var(--muted)}
+@media (max-width:1100px){.lanehead{display:none} .phase{grid-template-columns:1fr} .cl{display:block} .pl{flex-direction:row;flex-wrap:wrap;gap:4px 10px;align-items:baseline}}
+/* GUIA */
+table.t{border-collapse:collapse;width:100%;font-size:14px} table.t th{background:var(--forest);color:var(--on);text-align:left;padding:7px 9px;font-weight:600} table.t td{padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+.tw{overflow-x:auto}
+.sec{margin-top:26px}
+.sechead{display:flex;justify-content:space-between;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:10px}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--forest);color:var(--on);padding:9px 16px;border-radius:99px;font-weight:600;font-size:14px;z-index:40;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+.copybox{width:100%;min-height:160px;margin-top:8px;font:12.5px var(--mono);background:var(--paper2);border:1px solid var(--line);border-radius:8px;padding:10px}
+/* motion */
+@property --p{syntax:'<number>';inherits:false;initial-value:0}
+.ring{transition:--p .7s cubic-bezier(.2,.8,.2,1)}
+.ring b{transition:transform .25s}
+.ring.full b{animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+.bar>i{transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.it{transition:background .2s,transform .15s}
+.it:active{transform:scale(.995)}
+.it input[type=checkbox]{transition:background .2s,border-color .2s,transform .15s}
+.it input[type=checkbox]:active{transform:scale(.88)}
+.it input[type=checkbox]:checked::after{animation:tick .28s cubic-bezier(.2,1.6,.4,1)}
+.it .lb{background:linear-gradient(var(--green),var(--green)) no-repeat 0 58%/0% 1.5px;transition:background-size .35s ease,color .3s}
+.it.done .lb{text-decoration:none;background-size:100% 1.5px;color:var(--muted)}
+.it.pop{animation:rowflash .7s ease}
+.group{transition:border-color .3s,box-shadow .3s}
+.group .gdone{opacity:0;transform:scale(.6);transition:opacity .25s,transform .35s cubic-bezier(.2,1.6,.4,1);font-size:11px;font-weight:700;color:var(--on);background:var(--green);padding:1px 8px;border-radius:99px}
+.group.complete{border-color:var(--green)}
+.group.complete .gdone{opacity:1;transform:scale(1)}
+.group.complete .gh{background:var(--mint)}
+.view-in{animation:viewin .35s cubic-bezier(.2,.8,.2,1)}
+.slide-l{animation:slidel .3s cubic-bezier(.2,.8,.2,1)} .slide-r{animation:slider .3s cubic-bezier(.2,.8,.2,1)}
+details.day[open] .body{animation:opendown .28s ease}
+details.day>summary{transition:background .2s}
+details.day>summary:hover{background:var(--mint2)}
+.card,.wd,.kpi,.loop{transition:transform .2s,box-shadow .2s,border-color .2s}
+.wd:hover{transform:translateY(-3px);box-shadow:0 8px 20px -12px rgba(15,81,50,.45);border-color:var(--green)}
+.kpi:hover,.loop:hover{transform:translateY(-2px)}
+.btn{transition:transform .12s,border-color .2s,background .2s}
+.btn:active,.tab:active,.scale button:active,.lv button:active{transform:scale(.95)}
+.tab{transition:background .25s,color .25s,opacity .25s}
+.scale button,.lv button{transition:background .2s,color .2s,border-color .2s,transform .12s}
+.scale button[aria-pressed="true"],.lv button[aria-pressed="true"]{animation:pop .35s cubic-bezier(.2,1.6,.4,1)}
+.toast{transform:translate(-50%,16px);transition:opacity .25s,transform .35s cubic-bezier(.2,1.4,.4,1)}
+.toast.on{transform:translate(-50%,0)}
+.burst{position:fixed;pointer-events:none;z-index:50;width:0;height:0}
+.burst i{position:absolute;width:8px;height:8px;border-radius:2px;background:var(--c);animation:burst 1s cubic-bezier(.15,.8,.3,1) forwards}
+.nowtag{animation:pulse 2s ease-in-out infinite}
+@keyframes tick{from{transform:rotate(45deg) translate(-1px,-1px) scale(0)}to{transform:rotate(45deg) translate(-1px,-1px) scale(1)}}
+@keyframes pop{0%{transform:scale(.8)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes rowflash{0%{background:var(--mint)}100%{background:transparent}}
+@keyframes viewin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes slidel{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+@keyframes slider{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+@keyframes opendown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes burst{0%{transform:translate(0,0) rotate(0) scale(1);opacity:1}100%{transform:translate(var(--x),var(--y)) rotate(var(--r)) scale(.4);opacity:0}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(24,160,88,.45)}50%{box-shadow:0 0 0 6px rgba(24,160,88,0)}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+<header class="top"><div class="top-in">
+  <div class="brand"><h1>Painel da Preparação IB</h1>
+    <div class="meta"><span id="clock"></span><span class="sync" id="sync"><i></i><span>Carregando…</span></span></div></div>
+  <nav class="tabs" id="tabs" aria-label="Seções">
+    <button class="tab" data-view="hoje">Hoje</button>
+    <button class="tab" data-view="semana">Semana</button>
+    <button class="tab" data-view="calendario">Calendário</button>
+    <button class="tab" data-view="progresso">Progresso</button>
+    <button class="tab" data-view="topicos">Tópicos</button>
+    <button class="tab" data-view="fluxo">Fluxograma</button>
+    <button class="tab" data-view="guia">Guia</button>
+  </nav>
+</div></header>
+<main id="app"></main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const DATA = {"S": [["2026-10-30", "Módulo 0 — O que é Investment Banking", ["Como um banco de investimento ganha dinheiro (taxa de sucesso, retainer, comissão)", "Sell-side e buy-side; áreas: M&A, ECM, DCM, Leveraged Finance, Restructuring, cobertura setorial", "Áreas vizinhas: S&T, Research, Asset Management, Private Equity, VC, Corporate Finance, Transaction Services", "Hierarquia (estagiário → MD), ciclo de um mandato, dia a dia do estagiário", "Mercado brasileiro: bancos globais, locais, boutiques; CVM, B3, CADE, Banco Central"], "Questões conceituais criadas: áreas, níveis, em que área cada operação se encaixa", "aula"], ["2026-11-02", "DRE no padrão de IB", ["Receita bruta → líquida → lucro bruto → EBITDA → EBIT → resultado financeiro → LAIR → IR/CSLL → lucro líquido", "EBITDA vs. EBIT vs. lucro líquido", "Competência e confrontação (corrige erro do diagnóstico: CMV só na venda)", "Dividendos fora da DRE (corrige erro do diagnóstico)", "Capitalizar vs. despesa"], "400Q Contabilidade Básica 1–10 + DRE real de empresa brasileira", "aula"], ["2026-11-03", "Balanço em linguagem de IB + DFC", ["Ativos operacionais vs. financeiros; dívida bruta e líquida; PL", "DFC pelo método indireto: operacional, investimento, financiamento", "Capex, D&A e por que a depreciação volta na DFC"], "400Q Contabilidade Básica 11–22 + DFC de empresa real", "aula"], ["2026-11-04", "Ligações entre as três demonstrações", ["As ligações: lucro, D&A, capex, capital de giro, dívida, caixa, PL", "Método de resposta DRE → DFC → Balanço", "Walk-throughs: depreciação, despesa, compra e venda de estoque (corrige erros 2 e 3)"], "IP Contabilidade 1, 2, 17, 18 + 400Q Contabilidade Básica 23–34", "aula"], ["2026-11-05", "Capital de giro e receitas", ["Capital de giro operacional (por que caixa e dívida ficam fora)", "Ciclo de caixa; capital de giro negativo (corrige erro 4)", "Variação do capital de giro na DFC; contas a receber e receita diferida (SaaS)"], "IP Contabilidade 4, 5, 6, 7, 8", "aula"], ["2026-11-06", "Revisão da semana + PROVA SEMANAL 1", ["Bloco 1: revisão de Módulo 0 e Contabilidade I"], "Prova semanal 1 (60 min) + correção (60 min)", "prova"], ["2026-11-09", "Ativos, dívida e capital", ["Compra e venda de ativos com ganho ou perda; baixas (write-downs)", "Emissão de dívida, juros e amortização", "Emissão de ações, dividendos e recompra"], "IP Contabilidade 3, 9, 10, 11, 14, 15, 16 + criados", "aula"], ["2026-11-10", "Contabilidade avançada I", ["Goodwill e intangíveis", "Impostos diferidos; prejuízo fiscal e trava de 30%", "JCP (juros sobre capital próprio)", "IFRS 16: efeito de aluguéis no EBITDA e na dívida"], "IP Contabilidade 12, 13 (adaptadas) + 400Q Contabilidade Avançada 1–8", "aula"], ["2026-11-11", "Contabilidade avançada II + indicadores", ["Minoritários e equivalência patrimonial", "Itens não recorrentes e EBITDA ajustado", "Margens, ROE, ROIC, dívida líquida/EBITDA, cobertura de juros", "Leitura de release de resultados real"], "400Q Contabilidade Avançada 9–15 + análise de empresa brasileira", "aula"], ["2026-11-12", "Equity Value", ["Valor de mercado e ações diluídas (ação em tesouraria, RSUs, conversíveis)", "Equity Value vs. patrimônio líquido contábil"], "IP EV/Equity – Conceitos + IP EV/Equity – Cálculos 11, 12", "aula"], ["2026-11-13", "Revisão da semana + PROVA SEMANAL 2", ["Bloco 1: revisão do Módulo 1 completo"], "Prova semanal 2 + correção", "prova"], ["2026-11-16", "Enterprise Value", ["Ponte Equity ↔ EV: dívida, caixa, preferenciais, minoritários, coligadas, arrendamentos", "EV e Equity negativos", "Como transações mexem no EV e no Equity"], "IP EV/Equity – Cálculos 1–10 + 400Q EV/Equity Básico 1–15", "aula"], ["2026-11-17", "Múltiplos", ["Lógica e consistência numerador/denominador", "EV/Receita, EV/EBITDA, EV/EBIT, P/L, P/VP: quando usar cada um"], "400Q EV/Equity Avançado + criados", "aula"], ["2026-11-18", "Matemática financeira", ["Valor presente e futuro, juros compostos", "Anuidades, perpetuidade simples e crescente", "VPL, TIR, MOIC, regra de 72, conta de cabeça"], "Cálculos à mão e no Excel (VPL, TIR)", "aula"], ["2026-11-19", "Metodologias de valuation", ["Valor intrínseco vs. relativo", "As 3 metodologias: vantagens, desvantagens, qual dá maior valor", "Por que avaliar empresa que já é listada"], "IP Valuation 1–4 + 400Q Valuation Básico 1–12", "aula"], ["2026-11-20", "Revisão da semana + PROVA SEMANAL 3 (feriado: dia de estudo)", ["Bloco 1: revisão de Equity Value, EV, múltiplos e matemática financeira"], "Prova semanal 3 + correção", "prova"], ["2026-11-23", "Trading comps", ["Seleção de comparáveis (filtros)", "Spreading; LTM vs. NTM; calendarização", "Ajustes não recorrentes; mediana e quartis"], "IP Valuation 5–10 + 400Q Valuation Básico 13–24", "aula"], ["2026-11-24", "Transações precedentes + football field", ["Prêmio de controle, fontes, ajustes", "Football field", "SOTP, liquidação, prêmios, LBO como piso, DDM (introdução)"], "IP Valuation 11–15 + 400Q Valuation Básico 25–34 + Avançado", "aula"], ["2026-11-25", "Economia para IB", ["Selic, Copom, Focus", "Curva de juros (prefixados e NTN-B), IPCA, câmbio, risco-país", "Efeito em valuation e na janela de M&A, ECM e DCM"], "Interpretação de dados atuais (com pesquisa)", "aula"], ["2026-11-26", "Revisão geral dos Módulos 0 a 3 (véspera da prova mensal)", ["Contabilidade, EV, múltiplos, matemática financeira e valuation relativa", "Simulado curto + revisão dos cartões com tag erro"], "Simulado de 20 questões + correção", "aula"], ["2026-11-27", "PROVA MENSAL 1 (Módulos 0 a 3, cumulativa)", ["Bloco 1: prova (~2h, ~40 questões)"], "Bloco 2: correção", "mensal"], ["2026-11-30", "DCF: lógica e fluxo de caixa livre", ["Walk-through do DCF", "Fluxo de caixa livre para a firma (UFCF) passo a passo", "Projeções: receita, margens, capex, capital de giro"], "400Q DCF Básico (1ª metade)", "aula"], ["2026-12-01", "WACC e custo da dívida", ["Fórmula do WACC e benefício fiscal", "Estrutura de capital-alvo", "Custo da dívida no Brasil: CDI + spread, NTN-B"], "Cálculos de WACC", "aula"], ["2026-12-02", "Custo do capital próprio", ["CAPM; beta (desalavancar e realavancar); prêmio de mercado", "Brasil: abordagem em dólar vs. em reais; nominal vs. real"], "400Q DCF Básico (2ª metade) + exercícios de beta", "aula"], ["2026-12-03", "Valor terminal e fechamento do DCF", ["Gordon vs. múltiplo de saída; checagem cruzada", "Crescimento na perpetuidade em R$ nominais", "Meio de período; ponte do EV até o preço por ação"], "Casos numéricos completos", "aula"], ["2026-12-04", "Revisão da semana + PROVA SEMANAL 4", ["Bloco 1: revisão de DCF I"], "Prova semanal 4 + correção", "prova"], ["2026-12-07", "Sensibilidades em DCF", ["O que mais mexe no valor; peso do valor terminal", "Erros comuns em DCF"], "400Q DCF Avançado", "aula"], ["2026-12-08", "FCFE, DDM, bancos e seguradoras", ["DCF alavancado (FCFE) e DDM", "Bancos e seguradoras: P/VP, P/L, ROE vs. custo do capital próprio"], "Comparar Itaú, Bradesco e BTG por múltiplos", "aula"], ["2026-12-09", "Setores especiais", ["Commodities", "Concessões e utilities (DCF com prazo finito)", "Tecnologia/SaaS; empresas em prejuízo; SOTP"], "Casos criados", "aula"], ["2026-12-10", "Case integrado de valuation", ["Valuation completa de empresa brasileira real: comps + transações + DCF + football field"], "O próprio case (candidato a portfólio no LinkedIn)", "aula"], ["2026-12-11", "Revisão + PROVA SEMANAL 5 — marco: núcleo técnico em nível de entrevista", ["Bloco 1: revisão de DCF e valuation"], "Prova semanal 5 + correção", "prova"], ["2026-12-14", "M&A estratégico", ["Motivações e tipos de aquisição", "Estratégico vs. financeiro (corrige erro 5)", "Sinergias de custo e de receita; por que M&A destrói valor"], "Questões criadas + casos reais do briefing", "aula"], ["2026-12-15", "O processo de M&A", ["Sell-side: mandato → teaser → NDA → CIM → NBO → due diligence → oferta vinculante → SPA → CADE → fechamento", "Buy-side; papel do estagiário em cada fase", "Brasil: CADE, OPA, tag along, fairness opinion"], "Questões de processo + transações recentes", "aula"], ["2026-12-16", "Merger model e accretion/dilution", ["Estrutura do modelo; formas de pagamento", "Regra rápida: custo do financiamento vs. earnings yield"], "400Q Merger Model Básico 1–24", "aula"], ["2026-12-17", "Alocação do preço de compra (PPA)", ["Goodwill, write-ups, passivo fiscal diferido", "Consolidação de balanços; análise de contribuição"], "400Q Merger Model Avançado (selecionadas)", "aula"], ["2026-12-18", "Revisão + PROVA SEMANAL 6 (parte em inglês)", ["Bloco 1: revisão de M&A"], "Prova semanal 6 + correção", "prova"], ["2026-12-21", "Private equity e lógica do LBO", ["Como funciona um fundo de PE (GP, LP, ciclo, hurdle)", "Por que a alavancagem aumenta o retorno", "Bons candidatos a LBO"], "Questões conceituais de PE", "aula"], ["2026-12-22", "Fontes e usos + estrutura de dívida", ["Sources & uses", "Sênior, revolver, high yield, mezanino, debêntures", "Covenants e alavancagem típica"], "Exercícios de sources & uses", "aula"], ["2026-12-23", "Retornos e paper LBO", ["TIR e MOIC", "Paper LBO (de cabeça)", "Ponte de criação de valor: crescimento, desalavancagem, múltiplo"], "400Q LBO Básico 1–22", "aula"], ["2026-12-28", "O modelo de LBO", ["Walk-through do modelo", "Dividend recap; formas de saída", "LBO como método de valuation"], "400Q LBO Avançado", "aula"], ["2026-12-29", "Revisão geral de M&A e LBO", ["Revisão dos Módulos 5 e 6, foco em PE"], "Simulado de perguntas de M&A e LBO", "aula"], ["2026-12-30", "PROVA MENSAL 2 (Módulos 0 a 6, cumulativa) — quarta, porque 25/12 é feriado", ["Bloco 1: prova (~2h)"], "Bloco 2: correção", "mensal"], ["2027-01-04", "ECM: mercado de ações", ["IPO no Brasil: Resolução CVM 160, bookbuilding, greenshoe, lock-up", "Follow-on e block trade", "Por que a janela de IPOs ficou fechada"], "Questões criadas + ofertas recentes", "aula"], ["2027-01-05", "DCM I: dívida corporativa", ["Debêntures (incluindo incentivadas), notas comerciais, CRI/CRA, FIDC, bonds", "Estruturação, rating, garantias, covenants"], "Questões criadas + emissões recentes", "aula"], ["2027-01-06", "DCM II + reestruturação", ["Precificação: spread sobre CDI/NTN-B, duration", "Leveraged finance", "Recuperação judicial (Lei 11.101) e M&A em dificuldade"], "Questões criadas", "aula"], ["2027-01-07", "Visão integrada + estudo setorial", ["Como M&A, ECM e DCM se conectam num cliente", "Como fazer um estudo setorial em IB"], "Mini estudo setorial", "aula"], ["2027-01-08", "Revisão + PROVA SEMANAL 7", ["Bloco 1: revisão de mercado de capitais"], "Prova semanal 7 + correção", "prova"], ["2027-01-11", "Excel: boas práticas de modelagem", ["Convenção de cores, estrutura, atalhos, checagens"], "Montar a estrutura do modelo da empresa escolhida", "pratica"], ["2027-01-12", "Excel: modelo de 3 demonstrações — histórico", ["Coleta de dados no RI/CVM; padronização do histórico"], "Histórico montado e conferido", "pratica"], ["2027-01-13", "Excel: projeções", ["Projeção de DRE e balanço com premissas"], "Projeções ligadas", "pratica"], ["2027-01-14", "Excel: DFC, dívida e circularidade", ["DFC projetada, dívida e juros, circularidade, balanço fechando"], "Modelo completo fechando", "pratica"], ["2027-01-15", "TESTE PRÁTICO 1 — modelo de 3 demonstrações (prova semanal 8)", ["Bloco 1: revisão do modelo"], "Teste prático cronometrado + correção", "prova"], ["2027-01-18", "Excel: DCF ligado ao modelo", ["UFCF a partir do modelo; desconto; valor terminal"], "DCF no Excel", "pratica"], ["2027-01-19", "Excel: WACC e sensibilidade", ["Cálculo do WACC no Excel; tabelas de dados (sensibilidade)"], "Tabelas de sensibilidade", "pratica"], ["2027-01-20", "Excel: planilha de comps", ["Spreading de comparáveis em planilha"], "Comps da empresa escolhida", "pratica"], ["2027-01-21", "Excel + PowerPoint: transações e football field", ["Transações precedentes; football field em Excel e em slide"], "Football field pronto", "pratica"], ["2027-01-22", "TESTE PRÁTICO 2 — valuation no Excel (prova semanal 9)", ["Bloco 1: revisão"], "Teste prático + correção", "prova"], ["2027-01-25", "Excel: mini LBO", ["Fontes e usos, dívida, retornos"], "Mini LBO", "pratica"], ["2027-01-26", "Excel: LBO — retornos e sensibilidade", ["TIR e MOIC por cenário; sensibilidade a preço e saída"], "Sensibilidade do LBO", "pratica"], ["2027-01-27", "Excel: accretion/dilution", ["Modelo simples de merger"], "Merger model", "pratica"], ["2027-01-28", "PowerPoint: pitchbook", ["Estrutura de pitchbook, teaser e CIM; slides padrão de IB"], "2–3 slides de pitchbook", "pratica"], ["2027-01-29", "PROVA MENSAL 3 (teórica + prática em Excel)", ["Bloco 1: prova"], "Bloco 2: correção", "mensal"], ["2027-02-01", "Consolidação: setor de bancos e seguradoras", ["Como se analisa e avalia o setor"], "Perguntas de setor + transações recentes", "cons"], ["2027-02-02", "Consolidação: varejo e consumo", ["Indicadores e valuation do setor"], "Bloco 2 vira preparação de entrevistas a partir de fevereiro", "cons"], ["2027-02-03", "Consolidação: saúde", ["Indicadores e transações do setor"], "Preparação de entrevistas", "cons"], ["2027-02-04", "Rodada: contabilidade + EV (português e inglês)", ["400Q e IP dos temas, em voz alta"], "Preparação de entrevistas", "cons"], ["2027-02-05", "PROVA SEMANAL 10 + valuation case simulado", ["Bloco 1: case"], "Prova + correção", "prova"], ["2027-02-10", "Consolidação: agronegócio", ["Indicadores e transações do setor"], "Preparação de entrevistas", "cons"], ["2027-02-11", "Consolidação: energia e saneamento", ["Concessões, regulação, valuation"], "Preparação de entrevistas", "cons"], ["2027-02-12", "PROVA SEMANAL 11 + modeling test de 1h", ["Bloco 1: modeling test"], "Prova + correção", "prova"], ["2027-02-15", "Consolidação: infraestrutura", ["Concessões e projetos"], "Preparação de entrevistas", "cons"], ["2027-02-16", "Consolidação: tecnologia", ["SaaS, métricas e valuation"], "Preparação de entrevistas", "cons"], ["2027-02-17", "Rodada: valuation + DCF (inglês)", ["400Q e IP dos temas"], "Preparação de entrevistas", "cons"], ["2027-02-18", "Rodada: M&A + LBO (inglês)", ["400Q dos temas"], "Preparação de entrevistas", "cons"], ["2027-02-19", "PROVA SEMANAL 12 + modeling test de 2–3h (LBO)", ["Bloco 1: modeling test"], "Prova + correção", "prova"], ["2027-02-22", "Lacunas das entrevistas reais I", ["Temas que apareceram nas entrevistas"], "Preparação de entrevistas", "cons"], ["2027-02-23", "Lacunas das entrevistas reais II", ["Temas que apareceram nas entrevistas"], "Preparação de entrevistas", "cons"], ["2027-02-24", "Revisão geral I", ["Contabilidade, EV, valuation, DCF"], "Simulado", "cons"], ["2027-02-25", "Revisão geral II", ["M&A, LBO, mercado de capitais"], "Simulado", "cons"], ["2027-02-26", "PROVA MENSAL 4 — simulado final", ["Bloco 1: prova"], "Bloco 2: correção", "mensal"]], "free": {"2026-12-24": "Véspera de Natal (livre)", "2026-12-25": "Natal (livre)", "2026-12-31": "Véspera de Ano-Novo (livre)", "2027-01-01": "Ano-Novo (livre)", "2027-02-08": "Carnaval (livre)", "2027-02-09": "Carnaval (livre)"}, "vagas": {"2026-11-02": "Abrir a conversa Posicionamento e Vagas · pacote de documentos (matrícula, histórico, declaração de horário) · pesquisa URGENTE do calendário dos programas", "2026-11-04": "Chrome C1: auditoria do LinkedIn · corrigir erros do CV e data de saída · Chrome C8: pedidos de recomendação ao ex-gestor e a ex-colegas", "2026-11-09": "LinkedIn: título e Sobre (Chrome C2 para aplicar)", "2026-11-11": "LinkedIn: experiências + narrativa do período sem estágio", "2026-11-16": "CV no padrão de IB em português (1 página)", "2026-11-18": "CV em inglês + foto e banner", "2026-11-23": "LinkedIn: competências, idiomas, cursos, configurações, URL", "2026-11-25": "Perfil do LinkedIn em inglês", "2026-11-30": "Universo de empresas: bancos e boutiques (atividade em transações)", "2026-12-02": "Universo: fundos de PE e gestoras com função de IB (Chrome C9)", "2026-12-07": "Pipeline (planilha) montado", "2026-12-09": "Classificar empresas em níveis A/B/C (você confirma)", "2026-12-14": "Fontes de vagas + alertas (Chrome C6) + rotina semanal de busca", "2026-12-16": "Modelos de respostas para formulários", "2026-12-21": "Lista da Onda 1 pronta para 4/1", "2026-12-23": "Ajustes de CV por tipo de vaga; revisão final pré-Onda 1", "2026-12-28": "Revisão do pipeline e dos prazos de janeiro", "2026-12-30": "Livre (fim de ano)"}, "ia": [["2026-11-10", "2026-11-26", "Projeto de IA — Fase 1: descoberta (Banco de Dores, escolha e validação do problema)"], ["2026-12-01", "2026-12-29", "Projeto de IA — Fase 2: especificação e início do MVP"], ["2027-01-05", "2027-01-28", "Projeto de IA — Fase 3: construção do MVP (pronto em 28/1)"], ["2027-02-01", "2027-02-25", "Projeto de IA — Fase 4: ajustes finais e demonstração para entrevistas"]], "fri": {"2026-10-30": "Primeiro fechamento: conferir Anki, extensão do Chrome e briefing; preparar a Semana 1", "2026-11-06": "Planejar a conversa do Projeto de IA (começa 10/11)", "2026-11-27": "Planejar a conversa de Entrevistas (começa 14/12)", "2026-12-11": "Definir as regras para decidir entre ofertas", "2026-12-18": "Estratégia de networking da Onda 2 + reavaliar peso de PE e modelagem", "2027-01-29": "Preparar a Onda 2 (alvos A e B, ativação do networking)", "2027-02-26": "Fechamento final + plano de março"}, "wgoal": {"1": "Módulo 0 e Contabilidade I: entender o IB e as três demonstrações", "2": "Contabilidade II e Equity Value", "3": "EV, múltiplos, matemática financeira e metodologias de valuation", "4": "Valuation relativa, economia e Prova Mensal 1", "5": "DCF I: fluxo de caixa, WACC, custo de capital, valor terminal", "6": "DCF II, valuations especiais e case — núcleo técnico pronto", "7": "M&A completo", "8": "Private equity e LBO", "9": "LBO, revisão e Prova Mensal 2", "10": "ECM, DCM e reestruturação", "11": "Excel: modelo de três demonstrações", "12": "Excel: valuation (DCF, comps, football field)", "13": "Excel: LBO, merger model, pitchbook e Prova Mensal 3", "14": "Consolidação por setor + Onda 2", "15": "Consolidação (semana curta de Carnaval)", "16": "Rodadas em inglês e modeling tests", "17": "Lacunas, revisão final e Prova Mensal 4"}, "flow": {"lanes": [["tec", "Conhecimento técnico", "Conversa Conhecimento Técnico · 9h–17h"], ["vag", "LinkedIn, CV e vagas", "Conversa Posicionamento e Vagas + Chrome · 17h seg/qua"], ["ia", "Projeto de IA", "Conversa Projeto de IA · 17h ter/qui"], ["ent", "Entrevistas", "Conversa Entrevistas · a partir de 14/12"], ["sis", "Sistema e planejamento", "Planejamento · briefing · Anki · fechamento de sexta"]], "phases": [["F0", "Preparação", "27/10 – 1/11", {"tec": [["27–28/10", "Teste diagnóstico", "Resultado 12%: base de contabilidade estática; zero em EV, valuation, DCF, LBO", "done", ""], ["28/10", "Mapa de 89 tópicos em 10 módulos", "Ordem por dependência; níveis N1–N5; P0–P3", "done", ""], ["29/10", "Prompt técnico pronto e alinhado ao calendário", "Início em 30/10; provas às sextas; prova mensal na última sexta do mês", "done", ""], ["30/10", "Abrir conversa “Conhecimento Técnico — Semana 1”", "Prompt base + abertura da semana", "step", ""]], "vag": [["28/10", "Prompt de posicionamento pronto", "Escopo: LinkedIn, CV e vagas; bancos, boutiques, PE e gestoras", "done", ""], ["até 1/11", "Instalar a extensão Claude no Chrome", "Salvar regras fixas e prompts C1–C9 como atalhos", "step", ""], ["até 1/11", "Exportar o PDF do LinkedIn", "Perfil → Mais → Salvar como PDF", "step", ""]], "ia": [["contínuo", "Banco de Dores de IA começa a encher", "Toda aula aponta dores e facilitadores", "step", "alimenta a Fase 1 do projeto"]], "ent": [["—", "Ainda não começa", "A frente nasce em 14/12, quando o núcleo técnico estiver pronto", "wait", ""]], "sis": [["27–29/10", "Planejamento geral concluído", "Rotina, frentes, conversas, regras", "done", ""], ["29/10", "Briefing diário ativo", "E-mail às 7:00 + planilha de histórico de mercado", "done", ""], ["até 1/11", "Anki configurado", "Conta, baralhos IB::Técnico e IB::Inglês, FSRS, sincronização", "step", ""]]}], ["F1", "Fundamentos", "30/10 – 27/11", {"tec": [["30/10", "Módulo 0 — O que é IB", "Áreas, hierarquia, como o banco ganha dinheiro, mercado brasileiro", "step", ""], ["2/11–11/11", "Módulo 1 — Contabilidade para IB", "DRE, DFC, ligações, capital de giro, IFRS 16, JCP, goodwill", "step", ""], ["6/11 · 13/11", "Provas semanais 1 e 2", "Sextas, Bloco 2", "test", ""], ["12/11–18/11", "Módulo 2 — EV, Equity, múltiplos, matemática financeira", "Ponte EV↔Equity, ações diluídas, VPL, TIR", "step", ""], ["20/11", "Prova semanal 3", "", "test", ""], ["19/11–26/11", "Módulo 3 — Valuation relativa + economia", "Comps, transações, football field, Selic, curva de juros · revisão geral em 26/11", "step", ""], ["27/11", "PROVA MENSAL 1", "Módulos 0 a 3, cumulativa", "gate", "≥80% avança · <65% reforço e cronograma empurrado"]], "vag": [["2/11", "Pesquisa urgente: calendário dos programas", "Nível A e B; o que abre e fecha até fevereiro", "step", "define se alguma candidatura antecipa"], ["2/11", "Pacote de documentos", "Matrícula, histórico, declaração de horário, referências", "step", ""], ["4/11", "Auditoria do LinkedIn (Chrome C1) + CV corrigido", "Erros de digitação e data de saída", "step", ""], ["4/11", "Pedidos de recomendação (Chrome C8)", "Ex-gestor e ex-colegas do Bradesco", "step", ""], ["9/11 · 11/11", "Título, Sobre, experiências e narrativa", "Textos aprovados na conversa → aplicados com Chrome C2", "step", ""], ["16/11 · 18/11", "CV no padrão de IB (PT e EN) + foto e banner", "Uma página cada", "step", ""], ["23/11 · 25/11", "LinkedIn completo + perfil em inglês", "Competências, idiomas, configurações, URL", "mile", "Perfil pronto para recrutadores"]], "ia": [["6/11", "Planejar a conversa do Projeto de IA", "No fechamento de sexta, na conversa de planejamento", "step", ""], ["10/11–26/11", "Fase 1 — Descoberta", "Consolidar o Banco de Dores → escolher o problema → validar com o que se sabe do dia a dia de IB", "step", ""]], "ent": [["27/11", "Planejar a conversa de Entrevistas", "No fechamento de sexta", "step", ""]], "sis": [["todo dia", "Briefing 7:00 → leitura → Bloco 3 aprofunda 1–2 itens", "Transações viram assunto de entrevista", "loop", ""], ["sextas", "Fechamento semanal", "Relatórios técnico, vagas, IA → plano da semana seguinte", "loop", ""], ["27/11", "Balanço do mês 1", "Notas por tema, retenção do Anki, ritmo do cronograma", "step", ""]]}], ["F2", "Núcleo de valuation e transações", "30/11 – 30/12", {"tec": [["30/11–3/12", "Módulo 4 — DCF I", "Fluxo de caixa livre, WACC, CAPM no Brasil, valor terminal", "step", ""], ["4/12", "Prova semanal 4", "", "test", ""], ["7/12–10/12", "Módulo 4 — DCF II + case integrado", "Sensibilidades, bancos, setores especiais, valuation completa de empresa real", "step", "case pode ir para os Destaques do LinkedIn"], ["11/12", "Prova 5 — MARCO: núcleo técnico em nível de entrevista", "Contabilidade, EV, valuation, DCF", "mile", ""], ["14/12–17/12", "Módulo 5 — M&A", "Processo, sinergias, accretion/dilution, PPA · prova 6 em 18/12", "step", ""], ["21/12–29/12", "Módulo 6 — PE e LBO (P0)", "Sources & uses, dívida, TIR, MOIC, paper LBO, modelo · revisão em 29/12", "step", ""], ["30/12", "PROVA MENSAL 2", "Módulos 0 a 6 · quarta, porque 25/12 é feriado", "gate", ""]], "vag": [["30/11 · 2/12", "Universo de empresas", "Bancos, boutiques (por atividade em transações), fundos de PE, gestoras (Chrome C9)", "step", "transações viram exercício e assunto de entrevista"], ["7/12 · 9/12", "Pipeline montado + níveis A/B/C", "Você confirma a classificação", "step", ""], ["14/12", "Alertas (Chrome C6) + rotina semanal de busca", "Os alertas passam a chegar sozinhos por e-mail", "step", ""], ["16/12", "Modelos de respostas para formulários", "", "step", ""], ["21/12 · 23/12", "Lista da Onda 1 pronta + CV por tipo de vaga", "", "mile", "pronto para 4/1"]], "ia": [["1/12–29/12", "Fase 2 — Especificação e início do MVP", "Escopo, dados, ferramentas, primeira versão", "step", ""]], "ent": [["14/12", "Conversa de Entrevistas começa", "Bloco 3: 25 min de treino diário", "mile", ""], ["14/12 →", "Narrativa, “por que IB”, banco de histórias", "Fit e comportamentais, em português e inglês", "step", ""], ["18/12 →", "Simulado semanal (sextas, Bloco 3)", "", "loop", ""]], "sis": [["11/12", "Regras para decidir entre ofertas", "Definidas antes de qualquer oferta", "gate", ""], ["18/12", "Estratégia de networking da Onda 2", "+ reavaliar o peso de PE e modelagem", "step", ""], ["24–25/12 · 31/12–1/1", "Dias livres", "Só Anki", "wait", ""]]}], ["F3", "Mercado de capitais, modelagem e Onda 1", "4/1 – 29/1", {"tec": [["4/1–7/1", "Módulo 7 — ECM, DCM e reestruturação", "IPO, follow-on, debêntures, CRI/CRA, FIDC, bonds, recuperação judicial · prova 7 em 8/1", "step", ""], ["11/1–14/1", "Módulo 8 — Excel: modelo de 3 demonstrações", "Empresa brasileira real, do zero", "step", ""], ["15/1", "Teste prático 1", "Cronometrado", "test", ""], ["18/1–21/1", "Excel: DCF, WACC, sensibilidade, comps, football field", "", "step", ""], ["22/1", "Teste prático 2", "", "test", ""], ["25/1–28/1", "Excel: LBO, accretion/dilution + pitchbook", "", "step", ""], ["29/1", "PROVA MENSAL 3", "Teórica + prática em Excel", "gate", ""]], "vag": [["4/1", "ONDA 1 começa", "Níveis B e C · 5 a 10 candidaturas por semana", "mile", ""], ["seg · qua", "Ciclo da vaga (ver ciclo 3)", "Triagem dos alertas → Chrome C4 → decidir → adaptar CV → Chrome C5 → APROVADO → pipeline", "loop", ""], ["quando avança", "Aviso para a conversa de Entrevistas", "Empresa, etapa, data, link", "step", "→ Entrevistas"]], "ia": [["5/1–28/1", "Fase 3 — Construção do MVP", "", "step", ""], ["28/1", "MVP pronto", "", "mile", "→ CV, LinkedIn, networking e entrevistas"]], "ent": [["jan", "Testes online e entrevistas reais da Onda 1", "Treino específico para cada processo", "step", ""], ["após cada uma", "Registrar perguntas → achar lacunas", "Lacunas técnicas → conversa técnica e Anki", "loop", "→ Técnico"]], "sis": [["29/1", "Preparar a Onda 2", "Alvos A e B, ativação do networking", "step", ""]]}], ["F4", "Consolidação e Onda 2", "1/2 – 26/2", {"tec": [["1/2–25/2", "Módulo 9 — Consolidação", "Setores, rodadas em inglês, cases, lacunas das entrevistas · provas 5/2, 12/2, 19/2", "step", ""], ["12/2 · 19/2", "Modeling tests (1h e 2–3h)", "Inclui LBO completo", "test", ""], ["26/2", "PROVA MENSAL 4 — simulado final", "", "gate", ""]], "vag": [["fev · seg/ter/qua", "ONDA 2", "Níveis A e B + networking ativado", "mile", ""], ["fev", "CV e LinkedIn com o projeto de IA", "Seção Destaques", "step", ""]], "ia": [["fev · qui", "Fase 4 — Ajustes e demonstração", "Pitch de 2 min do projeto para entrevistas", "step", "→ Entrevistas"]], "ent": [["1/2 →", "Bloco 2 inteiro dedicado a entrevistas", "Cases, modeling tests, superdays", "step", ""]], "sis": [["8–9/2", "Carnaval (livre)", "Só Anki", "wait", ""], ["26/2", "Fechamento final + plano de março", "", "mile", ""]]}]], "spine": [["Planejamento", "27–29/10", "done"], ["Execução das frentes em paralelo", "30/10 → 26/2", ""], ["Candidaturas", "Onda 1: 4/1 · Onda 2: fev", ""], ["Processos seletivos", "triagem, testes online", ""], ["Entrevistas", "RH, fit, técnica, case", ""], ["Etapas finais", "superday, sócios", ""], ["Oferta", "regras definidas em 11/12", ""], ["Contratação", "início até março/2027", "goal"]], "loops": [["1", "Ciclo diário de aprendizagem", "todo dia útil", ["Aula (Bloco 1)", "Exercícios (Bloco 2)", "Correção 0–1–2", "Erros e conceitos viram cartões", "Importar no Anki (14:25)", "Revisão espaçada (16h e fim de semana)"], "volta para a aula do dia seguinte"], ["2", "Ciclo semanal", "sexta → segunda", ["Prova semanal (sexta)", "Nota por tema", "≥80% avança · 65–79% reforço de 1h na segunda · <65% dia extra", "Relatório semanal", "Fechamento (sexta, 17h)", "Plano da semana + ajustes no briefing", "Nova conversa técnica (segunda)"], "volta para a semana seguinte"], ["3", "Ciclo da vaga", "seg e qua, a partir de 4/1", ["Alerta ou busca", "Triagem (aceitaria trabalhar lá?)", "Chrome C4: extrair a vaga", "Decidir e adaptar o CV", "Chrome C5: formulário", "Você escreve APROVADO", "Pipeline atualizado", "Processo avança → aviso para Entrevistas"], "volta para a próxima vaga"], ["4", "Ciclo do erro em entrevista", "após cada entrevista", ["Erro ou pergunta difícil", "Registrar na conversa de Entrevistas", "Identificar a lacuna", "Conversa técnica + cartões no Anki", "Testar no simulado semanal"], "volta para a próxima entrevista"], ["5", "Ciclo do Chrome", "sempre que a conversa de vagas mandar", ["Conversa decide a tarefa", "Bloco “→ IR PARA O CHROME”", "Colar o prompt (ou atalho)", "Chrome executa e para antes de enviar", "APROVADO", "RETORNO colado na conversa", "Análise e próximo passo"], "volta para a conversa de vagas"], ["6", "Ciclo das dores de IA", "contínuo", ["Aulas apontam dores", "Banco de Dores no relatório semanal", "Conversa do Projeto de IA", "Problema escolhido → MVP", "CV, LinkedIn, networking e entrevistas"], "o projeto vira diferencial nas entrevistas"], ["7", "Ciclo do briefing", "todo dia, 6:17 → 7:00", ["Tarefa agendada roda sozinha", "Notícias + números", "Planilha de histórico", "E-mail às 7:00", "Leitura + Bloco 3", "Transações viram exercício e assunto de entrevista"], "volta no dia seguinte"]], "rules": [["Abriu programa de nível A?", "Candidate-se na hora, mesmo antes da Onda 2."], ["Entrevista marcada?", "Tem prioridade sobre qualquer bloco. O bloco perdido é reposto e o cronograma ajustado no fechamento."], ["Prazo de nível A amanhã?", "A frente das 17h vira vagas."], ["Recebeu oferta?", "Aplique as regras definidas em 11/12 antes de responder."], ["Ficou para trás no estudo?", "Leve ao fechamento de sexta. O cronograma é empurrado, nunca pulado."]], "kl": {"done": "Concluído", "step": "Etapa", "test": "Prova", "gate": "Decisão / portão", "mile": "Marco", "loop": "Rotina que se repete", "wait": "Em espera"}}, "modOf": [0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], "mods": [["Módulo 0", "O que é Investment Banking", "2/11", "P0", ["O que um banco de investimento faz e como ganha dinheiro (success fee, retainer, comissão de distribuição)", "Sell-side e buy-side", "Áreas de IB: M&A, ECM, DCM, Leveraged Finance, Restructuring, cobertura setorial vs. produto", "Áreas vizinhas: Sales & Trading, Research, Asset Management, Private Equity, Venture Capital, Corporate Finance, Transaction Services", "Hierarquia: estagiário, analista, associate, VP, diretor, MD", "Ciclo de um mandato e dia a dia do estagiário (materiais e ferramentas)", "Mercado brasileiro: bancos globais, locais e boutiques; CVM, B3, CADE, Banco Central"]], ["Módulo 1", "Contabilidade para IB", "Semanas 1–2 · 2 a 13/11", "P0", ["DRE no padrão de IB: da receita bruta ao lucro líquido; EBITDA, EBIT, resultado financeiro, IR/CSLL", "Regime de competência e confrontação entre receitas e despesas", "Capitalizar vs. lançar como despesa", "Balanço em linguagem de IB: ativos operacionais vs. financeiros, dívida bruta e líquida, patrimônio líquido", "DFC pelo método indireto: operacional, investimento, financiamento", "Capex, depreciação e amortização", "Ligações entre as três demonstrações", "Walk-throughs: depreciação, despesas, estoque, receita diferida, contas a receber", "Capital de giro operacional, ciclo de caixa, capital de giro negativo", "Compra e venda de ativos, ganhos e perdas, baixas (write-downs)", "Dívida (emissão, juros, amortização), emissão de ações, dividendos, recompra", "Goodwill e intangíveis", "Impostos diferidos, prejuízo fiscal e a trava de 30%", "JCP", "IFRS 16 (arrendamentos)", "Participação de não controladores e equivalência patrimonial", "Itens não recorrentes e EBITDA ajustado", "Indicadores: margens, ROE, ROIC, dívida líquida/EBITDA, cobertura de juros, liquidez", "Leitura de release de resultados"]], ["Módulo 2", "Equity Value, Enterprise Value e matemática financeira", "Semana 3 · 16 a 20/11", "P0", ["Valor de mercado e ações diluídas (ação em tesouraria, RSUs, conversíveis)", "Equity Value vs. patrimônio líquido contábil", "Enterprise Value e a ponte para o Equity Value (dívida, caixa, preferenciais, minoritários, coligadas, arrendamentos)", "EV e Equity Value negativos; efeito de transações sobre cada um", "Múltiplos: lógica, consistência, EV/Receita, EV/EBITDA, EV/EBIT, P/L, P/VP", "Valor presente e futuro, juros compostos, anuidades, perpetuidade (simples e crescente)", "VPL, TIR, MOIC, regra de 72"]], ["Módulo 3", "Valuation relativa e economia aplicada", "Semana 4 · 23 a 27/11", "P0", ["As três metodologias de valuation e quando usar cada uma", "Trading comps: seleção, spreading, LTM vs. NTM, calendarização, ajustes", "Transações precedentes e prêmio de controle", "Football field", "Outros métodos: soma das partes, liquidação, análise de prêmios, LBO como piso de valor, DDM", "Economia: Selic, Copom, Focus, curva de juros (prefixados e NTN-B), IPCA, câmbio, risco-país", "Efeito do cenário econômico sobre valuations e sobre a janela de M&A, ECM e DCM"]], ["Módulo 4", "DCF, custo de capital e valuations especiais", "Semanas 5–6 · 30/11 a 11/12", "P0", ["Lógica do DCF", "Fluxo de caixa livre para a firma (UFCF); projeções de receita, margens, capex e capital de giro", "WACC e benefício fiscal da dívida; estrutura de capital-alvo", "Custo da dívida no Brasil (CDI + spread, NTN-B)", "CAPM, beta (desalavancar e realavancar), prêmio de mercado", "Taxa livre de risco no Brasil: abordagem em dólar vs. em reais; nominal vs. real", "Valor terminal: Gordon vs. múltiplo de saída, checagem cruzada, crescimento na perpetuidade", "Convenção de meio de período; ponte do EV até o preço por ação", "Análise de sensibilidade e erros comuns", "DCF alavancado (FCFE) e DDM", "Valuation de bancos e seguradoras", "Setores especiais: commodities, concessões e utilities, tecnologia e SaaS, empresas em prejuízo", "Case integrado: comps + transações + DCF + football field"]], ["Módulo 5", "M&A", "Semana 7 · 14 a 18/12", "P0", ["Motivações, tipos de aquisição, comprador estratégico vs. financeiro", "Sinergias de custo e de receita; por que aquisições destroem valor", "Processo sell-side: mandato, teaser, NDA, CIM, lista de compradores, NBO, management presentation, data room, due diligence, oferta vinculante, SPA, assinatura, CADE, fechamento", "Processo buy-side", "Brasil: CADE, OPA, tag along, fairness opinion", "Merger model e formas de pagamento", "Accretion/dilution", "Alocação do preço de compra: goodwill, write-ups, passivo fiscal diferido", "Análise de contribuição"]], ["Módulo 6", "LBO e private equity", "Semanas 8–9 · 21/12 a 30/12", "P1", ["Como funciona um fundo de PE: GP, LP, ciclo do fundo, hurdle", "Por que a alavancagem aumenta o retorno; bons candidatos a LBO", "Sources & uses", "Estrutura de dívida: sênior, revolver, high yield, mezanino, debêntures; covenants", "TIR, MOIC e paper LBO", "Ponte de criação de valor (crescimento, desalavancagem, múltiplo)", "Walk-through do modelo de LBO, dividend recap, formas de saída", "LBO como método de valuation"]], ["Módulo 7", "Mercado de capitais", "Semana 10 · 4 a 8/1", "P1", ["ECM: IPO no Brasil (Resolução CVM 160, bookbuilding, greenshoe, lock-up, estabilização), follow-on, block trade", "DCM: debêntures (incluindo incentivadas), notas comerciais, CRI/CRA, FIDC, bonds externos", "Estruturação, rating, garantias, covenants", "Precificação: spread sobre CDI/NTN-B/pré, duration", "Leveraged finance", "Recuperação judicial (Lei 11.101) e M&A de empresas em dificuldade", "Como M&A, ECM e DCM se conectam num mesmo cliente", "Estudo setorial no padrão de IB"]], ["Módulo 8", "Modelagem em Excel e PowerPoint", "Semanas 11–13 · 11 a 29/1", "P1", ["Boas práticas de modelagem: cores, estrutura, atalhos, checagens", "Modelo de três demonstrações integradas do zero, com empresa brasileira real", "Circularidade (juros e caixa)", "DCF no Excel, WACC e tabelas de sensibilidade", "Planilha de comps, transações e football field", "Mini LBO e accretion/dilution no Excel", "Estrutura de pitchbook, teaser e CIM; slides padrão de IB"]], ["Módulo 9", "Consolidação", "Fevereiro · 1 a 26/2", "P1", ["Rodadas completas das 400 Questions e do Interview Prep, em português e inglês", "Setores: bancos, varejo, saúde, agronegócio, energia e saneamento, infraestrutura, tecnologia", "Valuation cases e modeling tests (1 a 3 horas)", "Reforço das lacunas que aparecerem nas entrevistas"]]], "trans": [["Mercado diário", "Selic, câmbio, bolsa, transações recentes", "15 min/dia"], ["Conta de cabeça", "Percentuais, juros compostos, múltiplos", "10 min/dia"], ["Inglês técnico", "Vocabulário; a partir de dezembro, parte dos exercícios em inglês", "15 min/dia"], ["Anki", "Revisão espaçada de conceitos e erros", "20 min/dia"], ["Dores de IA", "Dores e oportunidades de IA em cada tema importante", "Em cada aula"]]};
+const PLAN_START="2026-10-30", PLAN_END="2027-02-26", VIEW_START="2026-10-26", VIEW_END="2027-02-28";
+const WDN=["Segunda","Terça","Quarta","Quinta","Sexta","Sábado","Domingo"], WDS=["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"];
+const MONTHS=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+const LANEC={tec:"var(--tec)",vag:"var(--vag)",ia:"var(--ia)",ent:"var(--ent)",sis:"var(--sis)",base:"var(--sage)"};
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const P=iso=>{const [y,m,d]=iso.split("-").map(Number);return new Date(y,m-1,d)};
+const ISO=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const add=(iso,n)=>{const d=P(iso);d.setDate(d.getDate()+n);return ISO(d)};
+const wd=iso=>(P(iso).getDay()+6)%7;
+const fmt=iso=>{const d=P(iso);return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`};
+const fmtLong=iso=>{const d=P(iso);return `${WDN[wd(iso)]}, ${d.getDate()} de ${MONTHS[d.getMonth()]}`};
+const todayISO=()=>ISO(new Date());
+const between=(x,a,b)=>x>=a&&x<=b;
+
+/* ---------- state ---------- */
+let state={days:{},topics:{},settings:{offset:0}};
+const LS="ibpainel.v1";
+try{const raw=localStorage.getItem(LS);if(raw){const s=JSON.parse(raw);state={days:s.days||{},topics:s.topics||{},settings:Object.assign({offset:0},s.settings||{})}}}catch(e){}
+function mirror(){try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){}}
+let db=null, mode="local";
+const timers={}, chains={};
+function save(path,getBody){
+  mirror();
+  if(!db) return;
+  clearTimeout(timers[path]);
+  timers[path]=setTimeout(()=>{
+    const body=JSON.parse(JSON.stringify(getBody()));
+    chains[path]=(chains[path]||Promise.resolve()).then(()=>db.doc(path).set(body)).catch(err=>{
+      if(err&&err.code==="unavailable"){setTimeout(()=>db.doc(path).set(body).catch(()=>{}),800+Math.random()*700)}
+      else if(err&&err.code==="quota_exceeded"){toast("Espaço de armazenamento cheio")}
+      else{setSync("local","Salvo só neste navegador")}
+    });
+  },700);
+}
+function dayState(iso){return state.days[iso]||(state.days[iso]={c:{}})}
+function saveDay(iso){save("days/"+iso,()=>state.days[iso])}
+function saveTopics(){save("meta/topics",()=>({lv:state.topics}))}
+function saveSettings(){save("meta/settings",()=>state.settings)}
+function setSync(kind,text){const el=document.getElementById("sync");el.className="sync"+(kind==="local"?" local":"");el.querySelector("span").textContent=text}
+async function initDb(){
+  const c=window.claude;
+  if(!c||typeof c.use!=="function"){setSync("local","Salvo neste navegador");return}
+  try{db=await c.use("db")}catch(e){db=null}
+  if(!db){setSync("local","Salvo neste navegador");return}
+  try{
+    const [daysSnap,tSnap,sSnap]=await Promise.all([db.collection("days").get(),db.doc("meta/topics").get(),db.doc("meta/settings").get()]);
+    const days={};daysSnap.docs.forEach(d=>{days[d.id]=JSON.parse(JSON.stringify(d.data()||{}))});
+    if(daysSnap.size>0||tSnap.exists||sSnap.exists){
+      state.days=days;
+      if(tSnap.exists)state.topics=JSON.parse(JSON.stringify(tSnap.data().lv||{}));
+      if(sSnap.exists)state.settings=Object.assign({offset:0},JSON.parse(JSON.stringify(sSnap.data())));
+    }
+    mode="cloud";mirror();setSync("cloud","Sincronizado na nuvem");render();
+  }catch(e){db=null;setSync("local","Salvo neste navegador")}
+}
+
+/* ---------- plan logic ---------- */
+const BASE=DATA.S.map(x=>x[0]);
+const EXTRA=(()=>{const out=[];let d=add(BASE[BASE.length-1],1);while(out.length<20){if(wd(d)<5&&!DATA.free[d])out.push(d);d=add(d,1)}return out})();
+const STUDY=[...BASE,...EXTRA];
+function week(iso){if(iso<PLAN_START)return 0;if(iso<="2026-11-08")return 1;return Math.floor((P(iso)-P("2026-11-02"))/864e5/7)+1}
+function lesson(iso){
+  const i=STUDY.indexOf(iso);if(i<0)return null;
+  const k=i-(state.settings.offset||0);
+  if(k<0||k>=DATA.S.length)return null;
+  const s=DATA.S[k];return {n:k+1,date:s[0],title:s[1],subs:s[2],ex:s[3],type:s[4]};
+}
+function kind(iso){
+  if(iso<PLAN_START)return "pre";
+  if(DATA.free[iso])return "free";
+  if(wd(iso)>=5)return "weekend";
+  if(lesson(iso))return "study";
+  return "after";
+}
+function iaPhase(iso){for(const [a,b,t] of DATA.ia){if(between(iso,a,b))return t}return null}
+function frente(iso){
+  const w=wd(iso);
+  if(w===4)return {lane:"sis",t:"Fechamento semanal (conversa de planejamento)",s:DATA.fri[iso]||"Colar os relatórios da semana e receber o plano da próxima"};
+  if(iso<"2027-01-01"){
+    if(w===0||w===2)return {lane:"vag",t:"Vagas e LinkedIn",s:DATA.vagas[iso]||"Busca semanal e atualização do pipeline"};
+    if(w===1||w===3){const p=iaPhase(iso);return p?{lane:"ia",t:"Projeto de IA",s:p.replace("Projeto de IA — ","")}:{lane:"base",t:"Livre",s:"Faculdade ou configurações pendentes"}}
+  }else if(iso<"2027-02-01"){
+    if(w===0||w===2)return {lane:"vag",t:iso==="2027-01-04"?"Início da Onda 1 — candidaturas":"Onda 1 — candidaturas",s:"Níveis B e C · triagem dos alertas · Chrome C4/C5 · pipeline"};
+    if(w===1||w===3)return {lane:"ia",t:"Projeto de IA",s:(iaPhase(iso)||"Construção do MVP").replace("Projeto de IA — ","")};
+  }else{
+    if(w<=2)return {lane:"vag",t:"Onda 2 — candidaturas",s:"Níveis A e B + networking · pipeline"};
+    if(w===3)return {lane:"ia",t:"Projeto de IA",s:(iaPhase(iso)||"Ajustes e demonstração").replace("Projeto de IA — ","")};
+  }
+  return null;
+}
+function firstStudyOfWeek(iso){const w=week(iso);return STUDY.find(d=>week(d)===w&&kind(d)==="study")===iso}
+function provaNum(iso){const l=lesson(iso);return l&&(l.type==="prova"||l.type==="mensal")}
+/* checklist generator: groups of items with stable ids */
+function plan(iso){
+  const k=kind(iso), w=wd(iso), G=[];
+  const g=(id,time,title,from,to,items)=>G.push({id,time,title,from,to,items:items.filter(Boolean)});
+  const it=(id,lb,sb,lane)=>({id,lb,sb:sb||"",lane:lane||"base"});
+  if(k==="pre"){
+    g("setup","Antes de 30/10","Configuração inicial",null,null,[
+      it("set-anki","Anki: conta no AnkiWeb, app no Windows, baralhos IB::Técnico e IB::Inglês, FSRS 0,90","Guia_Anki_IB.pdf","sis"),
+      it("set-chrome","Instalar a extensão Claude no Chrome e salvar o atalho /regras-ib","Os atalhos /auditoria-linkedin (4/11) e /busca-vagas (14/12) são criados depois","vag"),
+      it("set-li","Exportar o PDF do LinkedIn (Perfil → Mais → Salvar como PDF)","","vag"),
+      it("set-pdf","Adicionar os PDFs (400Q, Interview Prep, CV) aos arquivos do projeto","","sis"),
+      it("set-brief","Conferir se o briefing das 7:00 chegou no e-mail","","sis"),
+      it("set-tec","Deixar pronta a abertura da conversa “Conhecimento Técnico — Semana 1”","","tec")]);
+    return G;
+  }
+  if(k==="free"){
+    g("free","Dia livre",DATA.free[iso],null,null,[it("anki","Anki 10–15 min no celular","Não pule a revisão: o acúmulo cresce rápido","sis")]);
+    return G;
+  }
+  if(k==="weekend"){
+    const items=[it("anki","Anki 10–15 min no celular","Revisões apenas, sem cartões novos","sis"),it("fac","Estudo da faculdade","","base")];
+    if(w===5)items.unshift(it("brief","Ler os destaques da semana no briefing","","sis"));
+    if(w===6)items.unshift(it("brief","Ler a prévia da semana no briefing","","sis"));
+    if(iso==="2026-10-31"||iso==="2026-11-01"){
+      items.push(it("set-anki","Configurar o Anki (se ainda não fez)","Guia_Anki_IB.pdf","sis"),it("set-chrome","Instalar a extensão do Chrome + atalho /regras-ib","","vag"),it("set-li","Exportar o PDF do LinkedIn","","vag"));
+    }
+    g("we","Fim de semana","Revisão leve e faculdade",null,null,items);
+    return G;
+  }
+  if(k==="after"){
+    g("after","Depois do plano","Rotina de manutenção",null,null,[it("brief","Ler o briefing","","sis"),it("anki","Anki","","sis"),it("vag","Candidaturas e processos em andamento","","vag")]);
+    return G;
+  }
+  const L=lesson(iso), isTest=L.type==="prova"||L.type==="mensal", isMensal=L.type==="mensal";
+  g("brief","07:00","Briefing",420,540,[it("brief","Ler o briefing do dia no e-mail","Transações, mercado e pergunta do dia","sis")]);
+  const b1=[];
+  if(firstStudyOfWeek(iso))b1.push(it("open","Abrir a conversa “Conhecimento Técnico — Semana "+week(iso)+"”","Colar o prompt base + abertura da semana com o relatório anterior","tec"));
+  if(isMensal)b1.push(it("b1","Prova mensal (cerca de 2h, cumulativa)",L.title,"tec"));
+  else if(isTest)b1.push(it("b1","Revisão da semana",L.title,"tec"));
+  else b1.push(it("b1","Aula: "+L.title,"Escrever “Dia "+L.n+" — Bloco 1” na conversa técnica","tec"),it("notes","Anotações completas e organizadas da aula","Resumo para anotar + glossário PT–EN","tec"));
+  g("b1","09:00–12:00","Bloco 1 — "+(isMensal?"Prova mensal":isTest?"Revisão":"Aula"),540,720,b1);
+  const b2=[];
+  if(isMensal)b2.push(it("b2","Correção da prova mensal",""+L.ex,"tec"));
+  else if(isTest)b2.push(it("b2","Prova (60 min) + correção (60 min)",L.ex,"tec"));
+  else b2.push(it("b2",iso>="2027-02-01"?"Exercícios do dia + preparação de entrevistas":"Exercícios de fixação",L.ex,"tec"),it("fix","Correção com nota 0–1–2 e resposta-modelo revisada","","tec"));
+  if(isTest)b2.push(it("nota","Registrar a nota da prova neste painel","Campo “Nota da prova” ao lado","sis"));
+  b2.push(it("ankiimp","14:25 · Importar os cartões do dia no Anki (Técnico + Inglês)","Conferir a pré-visualização antes de importar","sis"));
+  g("b2","12:30–14:30","Bloco 2 — "+(isTest?"Prova":"Exercícios"),750,870,b2);
+  g("gym","14:30–16:00","Academia",870,960,[it("gym","Academia","","base")]);
+  const b3=[];
+  if(w===4&&iso>="2026-12-18"){b3.push(it("anki3","Anki — 20 min","","sis"),it("sim","Simulado de entrevista — 40 min","Conversa de Entrevistas","ent"))}
+  else if(iso>="2026-12-14"){b3.push(it("anki3","Anki — 20 min","","sis"),it("mkt","Mercado — 15 min: aprofundar 1–2 itens do briefing","","sis"),it("int","Treino de entrevista — 25 min","Conversa de Entrevistas","ent"))}
+  else{b3.push(it("anki3","Anki — 20 min","","sis"),it("mkt","Mercado — 15 min: aprofundar 1–2 itens do briefing","","sis"),it("math","Conta de cabeça — 10 min","","tec"),it("eng","Inglês técnico — 15 min","Glossário do dia em voz alta","tec"))}
+  if(isTest)b3.push(it("leech","Anki: buscar tag:leech e tag:erro rated:7:1 e levar ao chat técnico","","sis"),it("rel","Pedir o relatório semanal ao chat técnico","Ele vai para o fechamento de sexta","tec"));
+  g("b3","16:00–17:00","Bloco 3 — Revisão",960,1020,b3);
+  const F=frente(iso);
+  if(F){
+    const fi=[];
+    if(w===4&&iso==="2026-10-30"){
+      fi.push(it("f-anki0","Confirmar que o Anki está configurado e os cartões do Dia 1 foram importados","","sis"),it("f-chrome0","Confirmar a extensão do Chrome e o atalho /regras-posicionamento","","vag"),it("f-brief0","Confirmar que o briefing chegou hoje às 7:00","","sis"),it("f-li0","Exportar o PDF do LinkedIn para a conversa de vagas de segunda","","vag"),it("f-plan0","Na conversa de planejamento: contar como foi o Dia 1","Não há relatório semanal ainda: a primeira prova é em 6/11","sis"));
+    }else if(w===4){
+      fi.push(it("f-tec","Colar o relatório técnico (gerado pelo chat técnico após a prova)","Cole na conversa de planejamento","tec"));
+      if(iso>="2026-11-06")fi.push(it("f-vag","Colar o relatório de vagas e LinkedIn","Gerado pela conversa de vagas","vag"));
+      if(iso>="2026-11-10")fi.push(it("f-ia","Colar o relatório do projeto de IA","","ia"));
+      if(iso>="2026-12-14")fi.push(it("f-ent","Colar o relatório de entrevistas","","ent"));
+      fi.push(it("f-anki","Informar a retenção do Anki (Estatísticas)","","sis"),it("f-copy","Copiar o resumo da semana deste painel (aba Progresso)","","sis"));
+      if(DATA.fri[iso])fi.push(it("f-agenda","Pauta extra: "+DATA.fri[iso],"","sis"));
+      fi.push(it("f-plan","Receber o plano da próxima semana","","sis"),it("f-brief","Levar ajustes à conversa do briefing, se houver","","sis"));
+    }else fi.push(it("f17",F.t,F.s,F.lane));
+    g("f17","17:00–18:15","Frente do dia — "+F.t,1020,1095,fi);
+  }
+  g("fac","18:30–22:30","Faculdade",1110,1350,[it("fac","Faculdade","","base")]);
+  return G;
+}
+function allItems(iso){return plan(iso).flatMap(g=>g.items)}
+function completion(iso){const items=allItems(iso);if(!items.length)return 0;const c=dayState(iso).c||{};return items.filter(i=>c[i.id]).length/items.length}
+function hasAny(iso){const s=state.days[iso];return s&&s.c&&Object.values(s.c).some(Boolean)}
+function alertsFor(iso){
+  const out=[], L=lesson(iso);
+  if(L&&L.type==="mensal")out.push(["red","Hoje é dia de PROVA MENSAL (cumulativa)."]);
+  else if(L&&L.type==="prova")out.push(["red","Hoje é dia de prova: "+L.title+"."]);
+  const nx=add(iso,1), L2=lesson(nx);
+  if(L2&&(L2.type==="prova"||L2.type==="mensal"))out.push(["amber","Amanhã: "+L2.title+"."]);
+  if(DATA.fri[iso])out.push(["gold","Pauta do fechamento de hoje: "+DATA.fri[iso]+"."]);
+  if(iso==="2026-12-11")out.push(["gold","Marco: núcleo técnico em nível de entrevista."]);
+  if(iso==="2026-12-14")out.push(["gold","Começa a conversa de Entrevistas e o treino diário."]);
+  if(iso==="2027-01-04")out.push(["gold","Começa a Onda 1 de candidaturas."]);
+  if(iso==="2027-01-28")out.push(["gold","MVP do projeto de IA deve estar pronto."]);
+  if(L&&/^(DRE no padrão|Ligações entre|Capital de giro)/.test(L.title))out.push(["green","Atenção: hoje a aula corrige erros do seu diagnóstico."]);
+  if(L&&/^M&A estratégico/.test(L.title))out.push(["green","Atenção: hoje a aula corrige o erro do diagnóstico sobre comprador estratégico vs. financeiro."]);
+  if(iso==="2026-12-30")out.push(["amber","A prova mensal de dezembro é hoje, quarta, porque a última sexta do mês (25/12) é feriado."]);
+  if(iso<"2027-01-04")out.push(["green","Se abrir um programa de nível A, candidate-se na hora, mesmo antes da Onda 1."]);
+  return out;
+}
+function upcoming(iso,n){
+  const out=[];for(let i=1;i<=n;i++){const d=add(iso,i);const L=lesson(d);
+    if(L&&(L.type==="prova"||L.type==="mensal"))out.push([d,L.title]);
+    if(DATA.fri[d])out.push([d,"Fechamento: "+DATA.fri[d]]);
+    if(DATA.free[d])out.push([d,DATA.free[d]]);
+    if(DATA.vagas[d]&&/URGENTE|Onda 1|alertas|Pipeline/i.test(DATA.vagas[d]))out.push([d,"Vagas: "+DATA.vagas[d]]);
+    const m={"2026-12-11":"Marco: núcleo técnico pronto","2026-12-14":"Início das Entrevistas","2027-01-04":"Início da Onda 1","2027-01-28":"MVP do projeto de IA"}[d];if(m)out.push([d,m]);
+  }return out;
+}
+
+/* ---------- render helpers ---------- */
+function itemsHTML(iso,items){
+  const c=dayState(iso).c||{};
+  return `<ul class="items">${items.map(i=>{const id=`ck-${iso}-${i.id}`;const on=!!c[i.id];
+    return `<li class="it ${on?"done":""}"><input type="checkbox" id="${id}" data-day="${iso}" data-item="${esc(i.id)}" ${on?"checked":""}><label for="${id}"><span class="lb">${esc(i.lb)}</span>${i.sb?`<span class="sb">${esc(i.sb)}</span>`:""}</label><span class="lane-dot" style="background:${LANEC[i.lane]||LANEC.base}" title="${esc(i.lane)}"></span></li>`}).join("")}</ul>`;
+}
+function groupsHTML(iso,showNow){
+  const now=new Date(), mins=now.getHours()*60+now.getMinutes(), isToday=iso===todayISO();
+  return plan(iso).map(g=>{const active=showNow&&isToday&&g.from!=null&&mins>=g.from&&mins<g.to;
+    const c=dayState(iso).c||{}, full=g.items.length&&g.items.every(i=>c[i.id]);
+    return `<section class="group ${active?"now":""} ${full?"complete":""}" data-group="${iso}|${g.id}" data-from="${g.from??""}" data-to="${g.to??""}"><div class="gh"><b>${esc(g.title)}</b><span class="row"><span class="gdone">✓ concluído</span><span class="mono">${esc(g.time)}</span><span class="nowslot">${active?'<span class="nowtag">agora</span>':""}</span></span></div>${itemsHTML(iso,g.items)}</section>`}).join("");
+}
+function typeChip(L){if(!L)return"";const m={prova:["prova","Prova"],mensal:["mensal","Prova mensal"],pratica:["pratica","Prática em Excel"],cons:["cons","Consolidação"],aula:["","Aula"]}[L.type]||["","Aula"];return `<span class="chip ${m[0]}">${m[1]}</span>`}
+function pct(x){return Math.round(x*100)}
+
+/* ---------- views ---------- */
+let viewDate=null;
+function vHoje(){
+  const iso=viewDate||todayISO(), k=kind(iso), L=lesson(iso), w=week(iso), p=pct(completion(iso)), ds=dayState(iso);
+  const pre=iso<PLAN_START?Math.round((P(PLAN_START)-P(iso))/864e5):0;
+  let themeHTML="";
+  if(k==="study")themeHTML=`<div class="theme"><div class="row">${typeChip(L)}<span class="mono">Semana ${w} · Dia ${L.n} de ${DATA.S.length}</span></div><div class="t">${esc(L.title)}</div><ul>${L.subs.map(s=>`<li>${esc(s)}</li>`).join("")}</ul><p class="muted" style="margin:8px 0 0"><b>Exercícios:</b> ${esc(L.ex)}</p></div>`;
+  else if(k==="pre")themeHTML=`<div class="theme"><div class="t">O plano começa em ${pre} dia${pre>1?"s":""}</div><p class="muted" style="margin:0">Sexta, 30/10: Dia 1 — Módulo 0, o que é Investment Banking. Use hoje para terminar a configuração abaixo.</p></div>`;
+  else if(k==="free")themeHTML=`<div class="theme"><div class="t">${esc(DATA.free[iso])}</div><p class="muted" style="margin:0">Descanse. Só o Anki continua.</p></div>`;
+  else if(k==="weekend")themeHTML=`<div class="theme"><div class="t">Fim de semana</div><p class="muted" style="margin:0">Faculdade e revisão leve. ${wd(iso)===6?"Próxima semana: "+esc(DATA.wgoal[week(add(iso,1))]||""):""}</p></div>`;
+  else themeHTML=`<div class="theme"><div class="t">Depois do cronograma de estudo</div><p class="muted" style="margin:0">Foco nos processos seletivos. O plano de março sai do fechamento de 26/2.</p></div>`;
+  const al=alertsFor(iso).map(([c,t])=>`<div class="alert ${c}">${esc(t)}</div>`).join("");
+  const up=upcoming(iso,7);
+  const prov=provaNum(iso)?`<div class="field"><label for="f-nota">Nota da prova (%)</label><input id="f-nota" type="number" min="0" max="100" inputmode="numeric" data-field="nota" data-day="${iso}" value="${ds.nota??""}" placeholder="ex.: 82"></div>`:"";
+  return `<div class="dayhead"><div><div class="kick">${w?`Semana ${w}`:"Antes do início"}${iso===todayISO()?" · hoje":""}</div><h2>${fmtLong(iso)}</h2></div>
+  <div class="dnav"><button class="btn" data-act="prev" aria-label="Dia anterior">←</button><button class="btn" data-act="today">Hoje</button><button class="btn" data-act="next" aria-label="Próximo dia">→</button></div></div>
+  <div class="grid2"><div>${themeHTML}${groupsHTML(iso,true)}</div>
+  <aside class="side">
+    <div class="card"><div class="row" style="justify-content:space-between"><div><h3 style="margin:0">Progresso do dia</h3><div class="muted" style="font-size:13px" data-count="${iso}">${allItems(iso).filter(i=>(ds.c||{})[i.id]).length} de ${allItems(iso).length} itens</div></div><div class="ring ${p===100?"full":""}" data-ring="${iso}" style="--p:${p}"><b data-pct="${iso}">${p}%</b></div></div>
+      <div class="row" style="margin-top:10px"><button class="btn ghost" data-act="checkall">Marcar tudo</button><button class="btn ghost" data-act="clearall">Desmarcar tudo</button></div></div>
+    ${al?`<div class="card"><h3>Avisos</h3>${al}</div>`:""}
+    <div class="card"><h3>Registro do dia</h3>${prov}
+      <div class="field"><label for="f-horas">Horas efetivas de estudo</label><input id="f-horas" type="number" min="0" max="14" step="0.5" inputmode="decimal" data-field="horas" data-day="${iso}" value="${ds.horas??""}" placeholder="ex.: 5,5"></div>
+      <div class="field"><label>Energia e foco</label><div class="scale" role="group" aria-label="Energia de 1 a 5">${[1,2,3,4,5].map(n=>`<button data-act="energia" data-day="${iso}" data-v="${n}" aria-pressed="${ds.energia===n}">${n}</button>`).join("")}</div></div>
+      <div class="field"><label for="f-notas">Anotações, dúvidas e bloqueios</label><textarea id="f-notas" data-field="notas" data-day="${iso}" placeholder="O que travou, o que levar ao fechamento, dúvidas para a próxima aula…">${esc(ds.notas||"")}</textarea></div></div>
+    <div class="card"><h3>Próximos 7 dias</h3>${up.length?`<ul class="upc">${up.map(([d,t])=>`<li><span class="mono">${WDS[wd(d)]} ${fmt(d)}</span><span>${esc(t)}</span></li>`).join("")}</ul>`:`<p class="muted" style="margin:0">Nada especial. Siga a rotina.</p>`}</div>
+  </aside></div>`;
+}
+function weekDates(iso){const m=add(iso,-wd(iso));return [...Array(7)].map((_,i)=>add(m,i))}
+function vSemana(){
+  const iso=viewDate||todayISO(), ds=weekDates(iso), w=week(ds[0]>=PLAN_START?ds[0]:ds[4]);
+  const studyDays=ds.filter(d=>kind(d)==="study"), avg=studyDays.length?studyDays.reduce((a,d)=>a+completion(d),0)/studyDays.length:0;
+  const test=ds.map(d=>[d,lesson(d)]).find(([d,L])=>L&&(L.type==="prova"||L.type==="mensal"));
+  return `<div class="dayhead"><div><div class="kick">Semana ${w||"—"} · ${fmt(ds[0])} a ${fmt(ds[6])}</div><h2>${esc(DATA.wgoal[w]||"Preparação")}</h2></div>
+  <div class="dnav"><button class="btn" data-act="wprev">← Semana</button><button class="btn" data-act="today">Esta semana</button><button class="btn" data-act="wnext">Semana →</button></div></div>
+  <div class="kpis"><div class="kpi"><div class="v">${pct(avg)}%</div><div class="l">Conclusão média dos dias de estudo</div></div>
+  <div class="kpi"><div class="v">${studyDays.length}</div><div class="l">Dias de estudo nesta semana</div></div>
+  <div class="kpi"><div class="v">${test?WDS[wd(test[0])]+" "+fmt(test[0]):"—"}</div><div class="l">${test?esc(test[1].title):"Sem prova nesta semana"}</div></div>
+  <div class="kpi"><div class="v">${ds.reduce((a,d)=>a+(+dayState(d).horas||0),0).toLocaleString("pt-BR")}h</div><div class="l">Horas registradas</div></div></div>
+  <div class="wk">${ds.map(d=>{const k=kind(d),L=lesson(d),F=k==="study"?frente(d):null;const c=pct(completion(d));
+    return `<button class="wd ${d===todayISO()?"today":""} ${k!=="study"?"we":""}" data-goto="${d}"><span class="d">${WDS[wd(d)]} ${fmt(d)}</span>${L?typeChip(L):k==="free"?'<span class="chip free">Livre</span>':k==="weekend"?'<span class="chip free">Fim de semana</span>':""}<span class="tt">${esc(L?L.title:k==="free"?DATA.free[d]:k==="weekend"?"Faculdade + Anki":k==="pre"?"Configuração":"—")}</span>${F?`<span class="muted" style="font-size:12.5px">17h: ${esc(F.t)}</span>`:""}<span class="bar" style="margin-top:auto"><i data-bar="${d}" style="width:${c}%"></i></span><span class="mono" style="color:var(--muted)" data-pctl="${d}">${c}% feito</span></button>`}).join("")}</div>
+  <p class="muted" style="margin-top:12px">Toque em um dia para abrir o checklist completo.</p>`;
+}
+let calFilter="todos", calOpen=false;
+function vCal(){
+  const weeks={};let d=PLAN_START;while(d<=VIEW_END){(weeks[week(d)]=weeks[week(d)]||[]).push(d);d=add(d,1)}
+  const t=todayISO();
+  const pass=dd=>{const L=lesson(dd),k=kind(dd);if(calFilter==="todos")return true;if(calFilter==="estudo")return k==="study";if(calFilter==="provas")return L&&(L.type==="prova"||L.type==="mensal");if(calFilter==="pendentes")return k==="study"&&dd<=t&&completion(dd)<1;return true};
+  return `<div class="sechead"><div><h2>Calendário completo</h2><p class="muted" style="margin:4px 0 0">Todos os dias de 30/10 a 28/02, com o checklist de cada um. Marque aqui ou na aba Hoje: é o mesmo registro.</p></div></div>
+  <div class="toolbar"><button class="btn primary" data-act="expand">${calOpen?"Recolher tudo":"Abrir tudo"}</button><button class="btn" data-act="gotoday">Ir para hoje</button>
+  <label class="muted" for="calf" style="font-size:13px">Mostrar</label><select id="calf" data-act="calfilter"><option value="todos" ${calFilter==="todos"?"selected":""}>Todos os dias</option><option value="estudo" ${calFilter==="estudo"?"selected":""}>Só dias de estudo</option><option value="provas" ${calFilter==="provas"?"selected":""}>Só provas</option><option value="pendentes" ${calFilter==="pendentes"?"selected":""}>Dias passados incompletos</option></select></div>
+  ${Object.entries(weeks).map(([w,ds])=>{const vis=ds.filter(pass);if(!vis.length)return"";return `<section class="wblock"><h3>Semana ${w} <span class="mono" style="color:var(--muted)">${fmt(ds[0])}–${fmt(ds[ds.length-1])}</span> <span class="muted" style="font-family:var(--body);font-size:14px;font-weight:500">${esc(DATA.wgoal[w]||"")}</span></h3>
+  ${vis.map(dd=>{const L=lesson(dd),k=kind(dd),c=pct(completion(dd));const title=L?L.title:k==="free"?DATA.free[dd]:k==="weekend"?"Fim de semana — faculdade + Anki":"—";
+   return `<details class="day ${dd===t?"is-today":""}" id="d-${dd}" ${calOpen||dd===t?"open":""}><summary><span class="mono">${WDS[wd(dd)]} ${fmt(dd)}</span><span class="sum-t">${typeChip(L)} ${esc(title)}</span><span class="bar"><i data-bar="${dd}" style="width:${c}%"></i></span></summary><div class="body">${L?`<p class="muted" style="margin:8px 0">${esc(L.subs.join(" · "))}</p>`:""}${groupsHTML(dd,false)}</div></details>`}).join("")}</section>`}).join("")}`;
+}
+function streak(){let n=0,d=todayISO();if(completion(d)<.8)d=add(d,-1);while(d>=PLAN_START&&completion(d)>=.8){n++;d=add(d,-1)}return n}
+function vProg(){
+  const t=todayISO(), past=STUDY.filter(d=>d<=t&&kind(d)==="study");
+  const done=past.filter(d=>completion(d)>=.8).length;
+  const allStudy=STUDY.filter(d=>kind(d)==="study");
+  const lessonsDone=allStudy.filter(d=>{const c=dayState(d).c||{};return c.b1&&c.b2}).length;
+  const provas=allStudy.filter(d=>provaNum(d)).map(d=>[d,lesson(d),dayState(d).nota]);
+  const notas=provas.filter(x=>x[2]!==undefined&&x[2]!=="").map(x=>+x[2]);
+  const hrs=Object.values(state.days).reduce((a,s)=>a+(+s.horas||0),0);
+  // heatmap
+  let hm=`<div class="heatwrap"><div class="heat"><span></span>${["S","T","Q","Q","S","S","D"].map(x=>`<span class="wl">${x}</span>`).join("")}`;
+  let d=VIEW_START,lastM=-1;while(d<=VIEW_END){const m=P(d).getMonth();hm+=`<span class="wl">${m!==lastM?MONTHS[m]:""}</span>`;lastM=m;for(let i=0;i<7;i++){const x=add(d,i);const c=completion(x);const cls=x>t?"fut":c>=.8?"l3":c>=.4?"l2":c>0?"l1":"";hm+=`<span class="c ${cls} ${x===t?"today":""}" title="${WDN[i]} ${fmt(x)} · ${pct(c)}%"></span>`}d=add(d,7)}hm+="</div></div>";
+  // chart
+  const W=Math.max(560,provas.length*44+60),H=220,bw=26;
+  let svg=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Notas das provas"><g font-family="JetBrains Mono, monospace" font-size="10" fill="var(--muted)">`;
+  [0,50,65,80,100].forEach(v=>{const y=180-v*1.5;svg+=`<line x1="40" x2="${W-10}" y1="${y}" y2="${y}" stroke="${v===80?"var(--green)":v===65?"var(--amber)":"var(--line)"}" stroke-dasharray="${v===80||v===65?"4 3":"0"}"/><text x="34" y="${y+3}" text-anchor="end">${v}</text>`});
+  provas.forEach(([dd,L,n],i)=>{const x=56+i*44;const v=n===undefined||n===""?null:+n;if(v!==null){const h=v*1.5;svg+=`<rect x="${x}" y="${180-h}" width="${bw}" height="${h}" rx="3" fill="${v>=80?"var(--emerald)":v>=65?"var(--amber)":"var(--red)"}"/><text x="${x+bw/2}" y="${174-h}" text-anchor="middle" fill="var(--ink)">${v}</text>`}else{svg+=`<rect x="${x}" y="176" width="${bw}" height="4" rx="2" fill="var(--line)"/>`}svg+=`<text x="${x+bw/2}" y="198" text-anchor="middle">${fmt(dd)}</text><text x="${x+bw/2}" y="211" text-anchor="middle">${L.type==="mensal"?"M":"S"}</text>`});
+  svg+=`</g></svg>`;
+  // modules progress by day ranges
+  const modNames=["O que é IB","Contabilidade","EV, múltiplos e mat. financeira","Valuation relativa e economia","DCF e valuations especiais","M&A","PE e LBO","Mercado de capitais","Excel e PowerPoint","Consolidação"];
+  const lessonDay=n=>STUDY.find(d=>{const L=lesson(d);return L&&L.n===n});
+  const mods=modNames.map((nm,mi)=>{let tot=0,dn=0;DATA.S.forEach((s,i)=>{if(DATA.modOf[i]!==mi)return;const dd=lessonDay(i+1);if(!dd)return;tot++;const cc=dayState(dd).c||{};if(cc.b1&&cc.b2)dn++});return [String(mi),nm,tot?dn/tot:0]});
+  return `<div class="sechead"><div><h2>Progresso</h2><p class="muted" style="margin:4px 0 0">Tudo calculado a partir do que você marcou. Um dia conta como concluído com 80% ou mais do checklist.</p></div><button class="btn primary" data-act="copyweek">Copiar resumo da semana</button></div>
+  <div class="kpis"><div class="kpi"><div class="v">${lessonsDone}/${DATA.S.length}</div><div class="l">Aulas e provas feitas (Blocos 1 e 2 marcados)</div></div>
+  <div class="kpi"><div class="v">${past.length?pct(done/past.length):0}%</div><div class="l">Dias de estudo até hoje com 80%+ (${done} de ${past.length})</div></div>
+  <div class="kpi"><div class="v">${streak()}</div><div class="l">Dias seguidos com 80%+</div></div>
+  <div class="kpi"><div class="v">${notas.length?Math.round(notas.reduce((a,b)=>a+b,0)/notas.length):"—"}${notas.length?"%":""}</div><div class="l">Média das provas (${notas.length} registradas)</div></div>
+  <div class="kpi"><div class="v">${hrs.toLocaleString("pt-BR")}h</div><div class="l">Horas de estudo registradas</div></div></div>
+  <div class="grid2"><div class="card"><h3>Notas das provas</h3><p class="muted" style="margin:0 0 8px;font-size:13px">Verde: 80% ou mais (avança) · Âmbar: 65–79% (reforço) · Vermelho: abaixo de 65% (repete). S = semanal, M = mensal.</p><div class="chartwrap">${svg}</div></div>
+  <div class="card"><h3>Módulos</h3><div class="mods">${mods.map(([c,nm,v])=>`<div class="m"><span>${esc(c)} · ${esc(nm)}</span><span class="bar"><i style="width:${pct(v)}%"></i></span><span class="mono">${pct(v)}%</span></div>`).join("")}</div></div></div>
+  <div class="card" style="margin-top:18px"><h3>Mapa de consistência</h3><p class="muted" style="margin:0 0 10px;font-size:13px">Cada quadrado é um dia. Quanto mais verde, mais do checklist foi feito.</p>${hm}</div>
+  <div class="card" style="margin-top:18px"><h3>Ajuste de cronograma</h3><p class="muted" style="margin:0 0 10px;font-size:14px">Se você atrasar, informe quantos dias de estudo está atrás. O painel desloca os temas para frente, sem pular nada. Combine o ajuste no fechamento de sexta e leve-o também à conversa do briefing.</p>
+  <div class="row"><button class="btn" data-act="off-">−1 dia</button><span class="mono" style="font-size:15px">Atraso atual: <b>${state.settings.offset||0}</b> dia(s)</span><button class="btn" data-act="off+">+1 dia</button></div></div>
+  <div class="card" style="margin-top:18px"><h3>Backup</h3><p class="muted" style="margin:0 0 10px;font-size:14px">${mode==="cloud"?"Seu progresso já fica salvo na nuvem deste painel.":"Seu progresso está salvo só neste navegador."} Você também pode copiar uma cópia de segurança ou restaurar uma.</p>
+  <div class="row"><button class="btn" data-act="backup">Copiar backup</button><button class="btn" data-act="restore">Restaurar backup</button></div><div id="bk"></div></div>`;
+}
+function vTopicos(){
+  const target={P0:4,P1:4};
+  return `<div class="sechead"><div><h2>Tópicos e nível de domínio</h2><p class="muted" style="margin:4px 0 0">Marque seu nível em cada tópico depois das provas: N1 reconheço · N2 entendo · N3 aplico · N4 entrevista · N5 domínio. A meta é N4 em todo o núcleo.</p></div></div>
+  <div class="toolbar"><button class="btn" data-act="tfilter">${tFilter?"Mostrar todos":"Mostrar só abaixo de N4"}</button></div>
+  ${DATA.mods.map((m,mi)=>{const [code,name,period,prio,tops]=m;const vals=tops.map((_,ti)=>state.topics[`${mi}-${ti}`]||0);const av=vals.reduce((a,b)=>a+b,0)/vals.length;
+  const rows=tops.map((tp,ti)=>{const id=`${mi}-${ti}`,v=state.topics[id]||0;if(tFilter&&v>=4)return"";return `<div class="trow"><span>${esc(tp)}</span><span class="lv" role="group" aria-label="Nível">${[1,2,3,4,5].map(n=>`<button data-act="lvl" data-t="${id}" data-v="${n}" aria-pressed="${v===n}">N${n}</button>`).join("")}</span></div>`}).join("");
+  if(!rows)return"";
+  return `<details class="day tmod" open><summary><span class="mono">${esc(code)}</span><span class="sum-t">${esc(name)} <span class="muted" style="font-weight:500">· ${esc(period)} · ${esc(prio)}</span></span><span class="mono" data-tavg="${mi}">média N${av.toFixed(1).replace(".",",")}</span></summary><div class="body">${rows}</div></details>`}).join("")}`;
+}
+let tFilter=false,tOpen=true;
+function vFluxo(){
+  const F=DATA.flow;
+  const node=s=>{const [d,t,det,k,o]=s;const ch=["done","gate","mile","test"].includes(k)?`<span class="badge">${esc(F.kl[k])}</span>`:"";return `<li class="n k-${k}"><div class="nh"><span class="mono">${esc(d)}</span>${ch}</div><p class="tt">${esc(t)}</p>${det?`<p class="det">${esc(det)}</p>`:""}${o?`<div class="out">↳ ${esc(o)}</div>`:""}</li>`};
+  return `<h2>Fluxograma da preparação</h2><p class="muted" style="max-width:75ch">Do planejamento à contratação. Cada coluna é uma frente; cada linha é uma fase no tempo. “↳” mostra o que uma etapa entrega para outra frente.</p>
+  <section class="sec"><h3>O caminho em uma linha</h3><ol class="spine">${F.spine.map(([t,d,c])=>`<li class="sp ${c}"><b>${esc(t)}</b><span>${esc(d)}</span></li>`).join("")}</ol></section>
+  <section class="sec"><h3>As frentes, fase a fase</h3><div class="lanehead"><div></div>${F.lanes.map(([k,n,w])=>`<div class="lh l-${k}"><b>${esc(n)}</b><span>${esc(w)}</span></div>`).join("")}</div>
+  ${F.phases.map(([c,n,d,cells])=>`<div class="phase"><div class="pl"><span class="pc">${esc(c)}</span><b>${esc(n)}</b><span class="pd">${esc(d)}</span></div>${F.lanes.map(([k,ln])=>`<div class="cell l-${k}"><div class="cl">${esc(ln)}</div><ol class="chain">${(cells[k]||[]).map(node).join("")}</ol></div>`).join("")}</div>`).join("")}</section>
+  <section class="sec"><h3>Ciclos que se repetem</h3><div class="loops">${F.loops.map(([n,t,w,st,b])=>`<article class="loop"><header><span class="ln">${n}</span><div><b>${esc(t)}</b><span>${esc(w)}</span></div></header><ol class="lc">${st.map(x=>`<li>${esc(x)}</li>`).join("")}</ol><p class="back">↺ ${esc(b)}</p></article>`).join("")}</div></section>
+  <section class="sec"><h3>Regras de interrupção</h3><ul class="rules">${F.rules.map(([q,a])=>`<li><b>${esc(q)}</b><span>${esc(a)}</span></li>`).join("")}</ul></section>`;
+}
+function vGuia(){
+  return `<h2>Guia</h2><p class="muted" style="max-width:75ch">Tudo o que define a rotina, num lugar só.</p>
+  <section class="sec"><h3>Rotina de um dia útil</h3><div class="tw"><table class="t"><tr><th>Horário</th><th>O quê</th><th>Onde</th></tr>
+  <tr><td class="mono">07:00</td><td>Ler o briefing (5–8 min)</td><td>E-mail</td></tr>
+  <tr><td class="mono">09:00–12:00</td><td>Bloco 1: aula, anotando tudo</td><td>Conversa Conhecimento Técnico</td></tr>
+  <tr><td class="mono">12:00–12:30</td><td>Almoço</td><td></td></tr>
+  <tr><td class="mono">12:30–14:30</td><td>Bloco 2: exercícios e correção · 14:25 importar cartões no Anki</td><td>Conversa técnica + Anki</td></tr>
+  <tr><td class="mono">14:30–16:00</td><td>Academia</td><td></td></tr>
+  <tr><td class="mono">16:00–17:00</td><td>Bloco 3: Anki 20 · mercado 15 · conta de cabeça 10 · inglês 15. A partir de 14/12: Anki 20 · mercado 15 · entrevista 25. Sextas a partir de 18/12: simulado</td><td>Anki · briefing · Entrevistas</td></tr>
+  <tr><td class="mono">17:00–18:15</td><td>Frente do dia</td><td>Conversa da frente + Chrome</td></tr>
+  <tr><td class="mono">18:30–22:30</td><td>Faculdade</td><td></td></tr>
+  <tr><td class="mono">Fim de semana</td><td>Faculdade + Anki 10–15 min por dia</td><td>Celular</td></tr></table></div></section>
+  <section class="sec"><h3>Frente das 17:00</h3><div class="tw"><table class="t"><tr><th>Mês</th><th>Seg</th><th>Ter</th><th>Qua</th><th>Qui</th><th>Sex</th></tr>
+  <tr><td>Nov</td><td>Vagas/LinkedIn</td><td>IA (de 10/11)</td><td>Vagas/LinkedIn</td><td>IA (de 10/11)</td><td>Fechamento</td></tr>
+  <tr><td>Dez</td><td>Vagas</td><td>IA</td><td>Vagas</td><td>IA</td><td>Fechamento</td></tr>
+  <tr><td>Jan</td><td>Candidaturas</td><td>IA</td><td>Candidaturas</td><td>IA</td><td>Fechamento</td></tr>
+  <tr><td>Fev</td><td>Candidaturas</td><td>Candidaturas</td><td>Candidaturas</td><td>IA</td><td>Fechamento</td></tr></table></div></section>
+  <section class="sec"><h3>Mapa das conversas</h3><div class="tw"><table class="t"><tr><th>Conversa</th><th>Quando</th><th>Como abrir</th></tr>
+  <tr><td>Planejamento</td><td>Sextas, no fechamento, ou quando algo mudar</td><td>Esta conversa; quando ficar longa, abrir “Planejamento 2” a partir de um resumo</td></tr>
+  <tr><td>Conhecimento Técnico</td><td>Todo dia útil, 9h–17h · uma conversa por semana</td><td>Prompt base (prompt-conhecimento-tecnico) + abertura da semana</td></tr>
+  <tr><td>Posicionamento e Vagas</td><td>Dias de vagas · uma conversa por fase</td><td>Prompt (prompt-posicionamento-vagas) + último relatório</td></tr>
+  <tr><td>Claude no Chrome</td><td>Quando a conversa de vagas mandar</td><td>Atalho /regras-ib + prompt da tarefa vindo da conversa de vagas</td></tr>
+  <tr><td>Projeto de IA</td><td>Dias de IA, a partir de 10/11</td><td>Prompt a planejar no fechamento de 6/11</td></tr>
+  <tr><td>Entrevistas</td><td>A partir de 14/12</td><td>Prompt a planejar no fechamento de 27/11</td></tr>
+  <tr><td>Briefing Diário</td><td>Só para ajustar a tarefa das 7:00</td><td>Prompt (prompt-briefing-diario)</td></tr></table></div></section>
+  <section class="sec"><h3>Critérios de avanço</h3><div class="tw"><table class="t"><tr><th>Nota da prova</th><th>O que acontece</th></tr>
+  <tr><td colspan="2" class="muted">Provas semanais às sextas. Prova mensal na última sexta do mês (27/11, 29/1, 26/2); em dezembro, na quarta 30/12, porque 25/12 é feriado.</td></tr><tr><td>80% ou mais</td><td>Avança normalmente</td></tr><tr><td>65% a 79%</td><td>Avança, com 1h de reforço no Bloco 1 da segunda</td></tr><tr><td>Abaixo de 65%</td><td>Não avança: o próximo dia é de reforço e o cronograma é empurrado (use o ajuste na aba Progresso)</td></tr></table></div></section>
+  <section class="sec"><h3>Arquivos de referência</h3><ul><li>Meu_Caminho_IB_Cronograma_Completo.pdf — cronograma em PDF</li><li>Guia_Anki_IB.pdf — Anki passo a passo</li><li>Conteudo_Estudo_Tecnico_IB.pdf — os 89 tópicos</li><li>Prompts no projeto: conhecimento técnico, posicionamento e vagas, briefing diário</li></ul></section>`;
+}
+function refreshDay(iso,srcEl){
+  const items=allItems(iso), c=dayState(iso).c||{}, done=items.filter(i=>c[i.id]).length, p=items.length?pct(done/items.length):0;
+  document.querySelectorAll(`[data-ring="${iso}"]`).forEach(el=>{const was=el.classList.contains("full");el.style.setProperty("--p",p);el.classList.toggle("full",p===100);if(p===100&&!was)celebrate(el)});
+  document.querySelectorAll(`[data-pct="${iso}"]`).forEach(el=>el.textContent=p+"%");
+  document.querySelectorAll(`[data-count="${iso}"]`).forEach(el=>el.textContent=`${done} de ${items.length} itens`);
+  document.querySelectorAll(`[data-bar="${iso}"]`).forEach(el=>el.style.width=p+"%");
+  document.querySelectorAll(`[data-pctl="${iso}"]`).forEach(el=>el.textContent=p+"% feito");
+  plan(iso).forEach(g=>{const full=g.items.length&&g.items.every(i=>c[i.id]);document.querySelectorAll(`[data-group="${iso}|${g.id}"]`).forEach(el=>{const was=el.classList.contains("complete");el.classList.toggle("complete",!!full);if(full&&!was&&srcEl&&!document.querySelector(`[data-ring="${iso}"]`))celebrate(el.querySelector(".gdone")||el)})});
+  if(p===100&&srcEl&&!document.querySelector(`[data-ring="${iso}"]`))celebrate(srcEl);
+}
+function celebrate(el){
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches||!el)return;
+  const r=el.getBoundingClientRect(), b=document.createElement("div");b.className="burst";b.style.left=(r.left+r.width/2)+"px";b.style.top=(r.top+r.height/2)+"px";
+  const cols=["var(--emerald)","var(--green)","var(--lime)","var(--teal)","var(--gold)"];
+  for(let i=0;i<28;i++){const s=document.createElement("i");const ang=Math.random()*Math.PI*2,dist=50+Math.random()*90;s.style.setProperty("--x",Math.cos(ang)*dist+"px");s.style.setProperty("--y",(Math.sin(ang)*dist-30)+"px");s.style.setProperty("--r",(Math.random()*540-270)+"deg");s.style.setProperty("--c",cols[i%cols.length]);s.style.animationDelay=(Math.random()*.08)+"s";b.appendChild(s)}
+  document.body.appendChild(b);setTimeout(()=>b.remove(),1300);
+}
+function updateNow(){
+  const now=new Date(), mins=now.getHours()*60+now.getMinutes(), t=todayISO();
+  document.querySelectorAll("[data-group]").forEach(el=>{const [d]=el.dataset.group.split("|");const f=el.dataset.from,to=el.dataset.to;const on=view==="hoje"&&d===t&&f!==""&&mins>=+f&&mins<+to;el.classList.toggle("now",on);const slot=el.querySelector(".nowslot");if(slot)slot.innerHTML=on?'<span class="nowtag">agora</span>':""});
+}
+function animate(cls){const app=document.getElementById("app");app.classList.remove("view-in","slide-l","slide-r");void app.offsetWidth;app.classList.add(cls)}
+const VIEWS={hoje:vHoje,semana:vSemana,calendario:vCal,progresso:vProg,topicos:vTopicos,fluxo:vFluxo,guia:vGuia};
+let view="hoje";
+function render(){
+  const app=document.getElementById("app");
+  const active=document.activeElement, aid=active&&active.id, sel=active&&active.selectionStart;
+  app.innerHTML=VIEWS[view]();
+  document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-current",b.dataset.view===view?"page":"false"));
+  if(aid){const el=document.getElementById(aid);if(el){el.focus();try{if(sel!=null)el.setSelectionRange(sel,sel)}catch(e){}}}
+}
+function go(v,keepDate){view=VIEWS[v]?v:"hoje";if(!keepDate&&v!=="hoje"&&v!=="semana")viewDate=null;try{if(location.hash!=="#"+view)history.replaceState(null,"","#"+view)}catch(e){location.hash=view}render();animate("view-in");window.scrollTo({top:0,behavior:"smooth"})}
+function toast(t){const el=document.getElementById("toast");el.textContent=t;el.classList.add("on");clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove("on"),1800)}
+
+/* ---------- summary & backup ---------- */
+function weekSummary(){
+  const ds=weekDates(viewDate||todayISO()), w=week(ds[0]>=PLAN_START?ds[0]:ds[4]);
+  let s=`RESUMO DO PAINEL — Semana ${w} (${fmt(ds[0])} a ${fmt(ds[6])})\nObjetivo: ${DATA.wgoal[w]||"-"}\n\n`;
+  ds.forEach(d=>{const k=kind(d),L=lesson(d),st=dayState(d);if(k==="study"){s+=`${WDS[wd(d)]} ${fmt(d)} · ${L.title} · ${pct(completion(d))}% do checklist`;if(st.nota!==undefined&&st.nota!=="")s+=` · nota ${st.nota}%`;if(st.horas)s+=` · ${st.horas}h`;if(st.energia)s+=` · energia ${st.energia}/5`;s+="\n";const c=st.c||{};const miss=allItems(d).filter(i=>!c[i.id]).map(i=>i.lb);if(miss.length&&d<=todayISO())s+=`   Não feito: ${miss.join("; ")}\n`;if(st.notas)s+=`   Anotações: ${st.notas.replace(/\n/g," / ")}\n`}});
+  const low=[];DATA.mods.forEach((m,mi)=>m[4].forEach((tp,ti)=>{const v=state.topics[`${mi}-${ti}`];if(v&&v<4)low.push(`${tp} (N${v})`)}));
+  if(low.length)s+=`\nTópicos abaixo de N4: ${low.slice(0,15).join("; ")}\n`;
+  s+=`\nAtraso no cronograma: ${state.settings.offset||0} dia(s)\n`;
+  return s;
+}
+function copyText(text,boxId){
+  const show=()=>{const box=document.getElementById(boxId);if(box){box.innerHTML=`<textarea class="copybox" readonly>${esc(text)}</textarea>`;const ta=box.querySelector("textarea");ta.focus();ta.select()}};
+  try{navigator.clipboard.writeText(text).then(()=>toast("Copiado"),()=>{show();toast("Selecione e copie o texto")})}catch(e){show()}
+}
+
+/* ---------- events ---------- */
+document.addEventListener("change",e=>{
+  const t=e.target;
+  if(t.matches('input[type=checkbox][data-item]')){const ds=dayState(t.dataset.day);ds.c=ds.c||{};if(t.checked)ds.c[t.dataset.item]=1;else delete ds.c[t.dataset.item];saveDay(t.dataset.day);const li=t.closest(".it");if(li){li.classList.toggle("done",t.checked);if(t.checked){li.classList.remove("pop");void li.offsetWidth;li.classList.add("pop")}}refreshDay(t.dataset.day,t);if(t.checked)toast("Feito ✓")}
+  if(t.matches('[data-act="calfilter"]')){calFilter=t.value;render()}
+});
+const inTimers={};
+document.addEventListener("input",e=>{
+  const t=e.target;if(!t.dataset.field)return;const ds=dayState(t.dataset.day);
+  ds[t.dataset.field]=t.type==="number"?(t.value===""?"":Number(t.value)):t.value;
+  saveDay(t.dataset.day);
+});
+document.addEventListener("click",e=>{
+  const tab=e.target.closest(".tab");if(tab){go(tab.dataset.view);return}
+  const gt=e.target.closest("[data-goto]");if(gt){viewDate=gt.dataset.goto;go("hoje",true);return}
+  const b=e.target.closest("[data-act]");if(!b||b.tagName==="SELECT")return;
+  const a=b.dataset.act, base=viewDate||todayISO(), sy=window.scrollY;
+  if(a==="prev"){viewDate=add(base,-1);render();animate("slide-l")}
+  else if(a==="next"){viewDate=add(base,1);render();animate("slide-r")}
+  else if(a==="today"){const back=base>todayISO();viewDate=null;render();animate(back?"slide-l":"slide-r")}
+  else if(a==="wprev"){viewDate=add(base,-7);render();animate("slide-l")}
+  else if(a==="wnext"){viewDate=add(base,7);render();animate("slide-r")}
+  else if(a==="checkall"||a==="clearall"){const ds=dayState(base);ds.c=ds.c||{};allItems(base).forEach(i=>{if(a==="checkall")ds.c[i.id]=1;else delete ds.c[i.id]});saveDay(base);document.querySelectorAll(`input[type=checkbox][data-day="${base}"]`).forEach((cb,i)=>{cb.checked=a==="checkall";const li=cb.closest(".it");if(li){li.classList.toggle("done",cb.checked);if(cb.checked){setTimeout(()=>{li.classList.remove("pop");void li.offsetWidth;li.classList.add("pop")},i*25)}}});refreshDay(base,b)}
+  else if(a==="energia"){const ds=dayState(b.dataset.day);ds.energia=Number(b.dataset.v);saveDay(b.dataset.day);b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)))}
+  else if(a==="expand"){calOpen=!calOpen;document.querySelectorAll("details.day").forEach(d=>d.open=calOpen);b.textContent=calOpen?"Recolher tudo":"Abrir tudo"}
+  else if(a==="gotoday"){const el=document.getElementById("d-"+todayISO());if(el){el.open=true;el.scrollIntoView({block:"start"})}else toast("Hoje está fora do cronograma")}
+  else if(a==="lvl"){const id=b.dataset.t,v=Number(b.dataset.v);state.topics[id]=state.topics[id]===v?0:v;saveTopics();b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(Number(x.dataset.v)===state.topics[id])));const mi=id.split("-")[0],tops=DATA.mods[mi][4];const av=tops.reduce((s,_,ti)=>s+(state.topics[mi+"-"+ti]||0),0)/tops.length;const el=document.querySelector(`[data-tavg="${mi}"]`);if(el)el.textContent="média N"+av.toFixed(1).replace(".",",")}
+  else if(a==="tfilter"){tFilter=!tFilter;render()}
+  else if(a==="off+"||a==="off-"){state.settings.offset=Math.max(0,(state.settings.offset||0)+(a==="off+"?1:-1));saveSettings();render();window.scrollTo(0,sy);toast("Cronograma ajustado")}
+  else if(a==="copyweek"){const box=document.getElementById("bk")||null;copyText(weekSummary(),"bk")}
+  else if(a==="backup"){copyText(JSON.stringify(state),"bk")}
+  else if(a==="restore"){const box=document.getElementById("bk");box.innerHTML=`<textarea class="copybox" id="rst" placeholder="Cole aqui o backup copiado antes"></textarea><button class="btn primary" data-act="dorestore" style="margin-top:8px">Restaurar agora</button>`}
+  else if(a==="dorestore"){try{const s=JSON.parse(document.getElementById("rst").value);if(!s||typeof s!=="object"||!s.days)throw 0;state={days:s.days,topics:s.topics||{},settings:Object.assign({offset:0},s.settings||{})};Object.keys(state.days).forEach(d=>saveDay(d));saveTopics();saveSettings();render();toast("Backup restaurado")}catch(err){toast("Backup inválido")}}
+});
+document.addEventListener("keydown",e=>{if(view!=="hoje"||/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;if(e.key==="ArrowLeft"){viewDate=add(viewDate||todayISO(),-1);render()}if(e.key==="ArrowRight"){viewDate=add(viewDate||todayISO(),1);render()}});
+window.addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(VIEWS[h]&&h!==view)go(h)});
+function tick(){const n=new Date();document.getElementById("clock").textContent=`${WDS[(n.getDay()+6)%7]} ${fmt(ISO(n))} · ${String(n.getHours()).padStart(2,"0")}:${String(n.getMinutes()).padStart(2,"0")}`}
+setInterval(()=>{tick();updateNow()},30000);
+tick();
+const h0=location.hash.slice(1);view=VIEWS[h0]?h0:"hoje";
+render();animate("view-in");
+initDb();
+</script>
+</body></html>
